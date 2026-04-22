@@ -950,6 +950,50 @@ function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'
 function fmtRange(s,e){if(!s&&!e)return'';if(s&&e&&s!==e)return s.slice(5)+' ~ '+e.slice(5);return(s||e).slice(5);}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+/* ── 샘플 데이터 초기화 (최초 1회) ── */
+(function seedData(){
+  const d=loadData();
+  if(Object.keys(d.plans).length>0)return; // 이미 데이터 있으면 스킵
+  const key='2026-04';
+  const plan={
+    kpis:[
+      {id:genId(),title:'AI활용 오프라인 모임',target:12,unit:'회',current:3},
+      {id:genId(),title:'교육 과정 운영',target:20,unit:'건',current:8},
+      {id:genId(),title:'커뮤니티 참여자',target:100,unit:'명',current:35}
+    ],
+    tasks:[
+      // ── 교육 ──
+      {id:genId(),title:'사용자교육 (1차)',category:'교육',group:'',assignees:['김원정 수석'],startDate:'2026-03-03',endDate:'2026-03-03',pct:100,status:'완료',note:''},
+      {id:genId(),title:'멘토지교육 (1회)',category:'교육',group:'',assignees:['김원정 수석'],startDate:'2026-03-03',endDate:'2026-03-18',pct:100,status:'완료',note:''},
+      {id:genId(),title:'사용자교육 (2차)',category:'교육',group:'정기교육',assignees:['제현재 사원'],startDate:'2026-04-01',endDate:'2026-04-20',pct:50,status:'진행중',note:''},
+      {id:genId(),title:'I-MATRIX 교육',category:'교육',group:'정기교육',assignees:['제현재 사원'],startDate:'2026-04-01',endDate:'2026-04-20',pct:30,status:'진행중',note:''},
+      {id:genId(),title:'사용자교육 (온사이트)',category:'교육',group:'정기교육',assignees:['제현재 사원'],startDate:'2026-04-06',endDate:'2026-04-06',pct:100,status:'완료',note:''},
+      {id:genId(),title:'온사이트 - KIS 정보통신',category:'교육',group:'정기교육',assignees:['김원정 수석'],startDate:'2026-04-07',endDate:'2026-04-07',pct:0,status:'진행중',note:''},
+      {id:genId(),title:'온사이트 - 농협은행',category:'교육',group:'정기교육',assignees:['김원정 수석'],startDate:'2026-03-27',endDate:'2026-03-27',pct:100,status:'완료',note:''},
+      // ── 그룹장님 지시업무 ──
+      {id:genId(),title:'교재발간 (사례분)',category:'그룹장님 지시업무',group:'',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-10',pct:20,status:'진행중',note:''},
+      {id:genId(),title:'콘텐츠 교재활용 방안',category:'그룹장님 지시업무',group:'',assignees:['장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-15',pct:10,status:'진행중',note:''},
+      {id:genId(),title:'Step 0: 콘텐츠 마인드셋 소개/업무분장',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원'],startDate:'2026-04-07',endDate:'2026-04-07',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 1: 퍼실리테이터 기반 커리큘럼 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-07',endDate:'2026-04-14',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 2: 콘텐츠 제작 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-14',endDate:'2026-04-21',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 3: 대내 저작 및 스타일 작성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-21',endDate:'2026-04-28',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 4: 교재 구성 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-28',endDate:'2026-05-05',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 5: AI 이미지 편집 및 활용 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원','허선희'],startDate:'2026-05-05',endDate:'2026-05-12',pct:0,status:'백로그',note:''},
+      // ── 주요 업무 ──
+      {id:genId(),title:'AUOP 교육 라인 수립 추진',category:'주요 업무',group:'',assignees:['김원정 수석'],startDate:'2026-05-13',endDate:'2026-05-13',pct:0,status:'백로그',note:''},
+      // ── 커뮤니티 ──
+      {id:genId(),title:'전체 프로그램 기획 (AI서비스 고객)',category:'커뮤니티',group:'',assignees:['김원정 수석'],startDate:'2026-04-06',endDate:'2026-04-10',pct:30,status:'진행중',note:''},
+      {id:genId(),title:'치내 배상 문서 작성',category:'커뮤니티',group:'',assignees:['허선희'],startDate:'2026-04-01',endDate:'2026-04-22',pct:20,status:'진행중',note:''},
+      {id:genId(),title:'치내 배상 운영 실행',category:'커뮤니티',group:'',assignees:['허선희'],startDate:'2026-04-15',endDate:'2026-04-30',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'[보조사이트] 컨퍼런스 교육 기획 기능 추가',category:'커뮤니티',group:'보조사이트',assignees:['제현재 사원'],startDate:'2026-04-06',endDate:'2026-04-20',pct:10,status:'진행중',note:''},
+      {id:genId(),title:'[보조사이트] 프로그램명/RAG 기능 추가',category:'커뮤니티',group:'보조사이트',assignees:['제현재 사원'],startDate:'2026-04-15',endDate:'2026-04-30',pct:0,status:'백로그',note:''}
+    ]
+  };
+  const data={plans:{}};
+  data.plans[key]=plan;
+  saveData(data);
+})();
+
 /* ── 초기화 ── */
 (function init(){
   const info=getWeekInfo(0);
