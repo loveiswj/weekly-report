@@ -450,9 +450,9 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 <script>
 const MEMBERS=['김원정 수석','장민지 선임','제현재 사원','허선희'];
 const MANAGER='김원정 수석';
-const M_COLORS=['#C0392B','#2563EB','#15803D','#B45309'];
+const M_COLORS=['#D45F5F','#5B8FCC','#4A9E78','#C4933A'];
 const CATS=['교육','그룹장님 지시업무','주요 업무','커뮤니티','기타'];
-const CAT_COLORS={교육:'#2563EB','그룹장님 지시업무':'#7C3AED','주요 업무':'#15803D',커뮤니티:'#B45309',기타:'#6B7280'};
+const CAT_COLORS={교육:'#5B8FCC','그룹장님 지시업무':'#9B72C8','주요 업무':'#4A9E78',커뮤니티:'#C4933A',기타:'#8B96A8'};
 const PLAN_KEY='bm_plan_v3';
 
 function loadData(){try{return JSON.parse(localStorage.getItem(PLAN_KEY))||{plans:{}};}catch{return{plans:{}};}}
@@ -728,7 +728,7 @@ function renderGantt(){
         const inRange=t.startDate&&t.endDate&&t.startDate<=w.end&&t.endDate>=w.start;
         const isCur=wi===curWk;
         html+='<div style="flex:1;min-width:80px;border-right:1px solid #EDEEF3;background:'+(isCur?'rgba(192,57,43,.04)':bg)+';padding:5px 3px;">';
-        if(inRange){const op=t.status==='완료'?.3:.6;html+='<div style="height:17px;border-radius:8px;background:'+aColor+';opacity:'+op+';display:flex;align-items:center;padding:0 6px;"><span style="font-size:.59rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;">'+(t.pct?t.pct+'%':'')+'</span></div>';}
+        if(inRange){const op=t.status==='완료'?.25:.45;html+='<div style="height:17px;border-radius:8px;background:'+aColor+';opacity:'+op+';display:flex;align-items:center;padding:0 6px;"><span style="font-size:.59rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;">'+(t.pct?t.pct+'%':'')+'</span></div>';}
         html+='</div>';
       });
       html+='</div>';
@@ -1009,7 +1009,8 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 /* 초기 데이터 */
 (function seedData(){
   const d=loadData();
-  if(Object.keys(d.plans).length>0)return;
+  const k='2026-04';
+  if(d.plans[k]&&d.plans[k].tasks&&d.plans[k].tasks.length>0)return;
   const key='2026-04';
   const plan={
     kpis:[
