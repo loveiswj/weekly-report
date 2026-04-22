@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 :root{--sb:#1C2340;--sb-acc:#C0392B;--hd:#2C2C2C;--bg:#F2F4F8;--card:#fff;--border:#DDE2EE;--text:#1A202C;--sub:#64748B;--hint:#9CA3AF;}
+html{font-size:19px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 /* 사이드바 */
@@ -727,7 +728,7 @@ function renderGantt(){
         const inRange=t.startDate&&t.endDate&&t.startDate<=w.end&&t.endDate>=w.start;
         const isCur=wi===curWk;
         html+='<div style="flex:1;min-width:80px;border-right:1px solid #EDEEF3;background:'+(isCur?'rgba(192,57,43,.04)':bg)+';padding:5px 3px;">';
-        if(inRange){const op=t.status==='완료'?.4:1;html+='<div style="height:17px;background:'+aColor+';opacity:'+op+';display:flex;align-items:center;padding:0 4px;"><span style="font-size:.59rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;">'+(t.pct?t.pct+'%':'')+'</span></div>';}
+        if(inRange){const op=t.status==='완료'?.3:.6;html+='<div style="height:17px;background:'+aColor+';opacity:'+op+';display:flex;align-items:center;padding:0 4px;"><span style="font-size:.59rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;">'+(t.pct?t.pct+'%':'')+'</span></div>';}
         html+='</div>';
       });
       html+='</div>';
@@ -776,7 +777,7 @@ function renderCal(){
     dt.slice(0,4).forEach(t=>{
       const fa=t.assignees&&t.assignees[0];
       const ac=M_COLORS[MEMBERS.indexOf(fa)]||'#aaa';
-      html+='<div class="cal-event" style="background:'+ac+(t.status==='완료'?';opacity:.4;':'')+'" title="'+esc(t.title)+'">'+esc(t.title)+(fa?' · '+fa.split(' ')[0]:'')+'</div>';
+      html+='<div class="cal-event" style="background:'+ac+';opacity:'+(t.status==='완료'?.3:.6)+'" title="'+esc(t.title)+'">'+esc(t.title)+(fa?' · '+fa.split(' ')[0]:'')+'</div>';
     });
     if(dt.length>4)html+='<div style="font-size:.59rem;color:var(--hint);">+'+( dt.length-4)+'건</div>';
     html+='</div>';
