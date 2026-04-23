@@ -845,13 +845,13 @@ function renderGantt(){
   html+='<div style="display:grid;grid-template-columns:'+COLS+';background:#F4F5F9;border-bottom:2px solid var(--border);">';
   html+='<div style="padding:6px 10px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);">업무명</div>';
   html+='<div style="padding:6px 4px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);text-align:center;">담당</div>';
-  allDays.forEach((d,i)=>{
-    if(i===5){html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';return;}
-    const iso=allISOs[i],isT=iso===today;
+  for(let i=0;i<10;i++){
+    if(i===5)html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';
+    const d=allDays[i],iso=allISOs[i],isT=iso===today;
     html+='<div style="padding:5px 2px;text-align:center;font-size:.67rem;color:'+(isT?'var(--sb-acc)':'var(--sub)')+
       ';font-weight:'+(isT?'700':'400')+';background:'+(isT?'#FEF2F2':'#F4F5F9')+';border-right:1px solid #EDEEF3;">'+
       DOW[d.getDay()]+'<br><span style="font-size:.57rem;color:'+(isT?'var(--sb-acc)':'var(--hint)')+';">'+(d.getMonth()+1)+'/'+d.getDate()+'</span></div>';
-  });
+  }
   html+='</div>';
 
   // 카테고리 + 업무 행
