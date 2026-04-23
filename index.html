@@ -759,7 +759,8 @@ function renderTaskTable(){
     if(collapsed)return;
     ct.forEach(t=>{
       {
-        rows+='<tr class="task-row" style="'+(t.status==='완료'?'opacity:.55;':'')+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
+        const rowStyle=t.status==='완료'?'opacity:.55;':t.status==='진행중'?'background:#EEF3FF;border-left:3px solid var(--sb-acc);':'';
+        rows+='<tr class="task-row" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
           '<td style="color:var(--hint);font-size:.69rem;">'+no+'</td>'+
           '<td style="font-size:.72rem;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+cc+';margin-right:6px;flex-shrink:0;vertical-align:middle;" title="'+cat+'"></span>'+esc(t.title)+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
