@@ -121,9 +121,13 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .mt-title{font-size:.81rem;font-weight:600;color:var(--text);}
 .mt-meta{font-size:.67rem;color:var(--sub);margin-top:2px;display:flex;gap:7px;flex-wrap:wrap;}
 .today-tag{font-size:.62rem;font-weight:700;background:var(--sb-acc);color:#fff;padding:2px 7px;border-radius:20px;margin-left:3px;}
-.ac-group{display:flex;gap:6px;flex-wrap:wrap;}
-.ac-group label{display:flex;align-items:center;gap:4px;font-size:.77rem;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:20px;user-select:none;}
-.ac-group label:has(input:checked){border-color:var(--sb-acc);background:#EDF1FB;color:var(--sb-acc);font-weight:600;}
+.ac-group{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;padding:4px 0;}
+.ac-group label{cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;user-select:none;}
+.ac-group label input{display:none;}
+.ac-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#fff;transition:all .18s;opacity:.28;box-shadow:0 0 0 0 transparent;}
+.ac-group label:has(input:checked) .ac-av{opacity:1;box-shadow:0 0 0 3px var(--sb-acc);}
+.ac-nm{font-size:.61rem;color:var(--hint);transition:color .15s;white-space:nowrap;}
+.ac-group label:has(input:checked) .ac-nm{color:var(--sb-acc);font-weight:600;}
 /* 간트 */
 .gantt-wrap{overflow-x:auto;width:100%;}
 /* 캘린더 */
@@ -814,8 +818,15 @@ function clearTaskForm(){
 }
 function buildAC(sel){
   const allChecked=MEMBERS.every(m=>sel.includes(m));
-  const allLabel='<label><input type="checkbox" id="ac-all" onchange="toggleAllAC(this.checked)" '+(allChecked?'checked':'')+'><span>모두</span></label>';
-  document.getElementById('tmAssigneeChecks').innerHTML=allLabel+MEMBERS.map(m=>'<label><input type="checkbox" class="ac-member" value="'+m+'" '+(sel.includes(m)?'checked':'')+'><span>'+m+'</span></label>').join('');
+  let html='<label><input type="checkbox" id="ac-all" onchange="toggleAllAC(this.checked)" '+(allChecked?'checked':'')+'>'
+    +'<div class="ac-av" style="background:#8896A8;font-size:.62rem;font-weight:700;">전체</div>'
+    +'<div class="ac-nm">모두</div></label>';
+  MEMBERS.forEach((m,i)=>{
+    html+='<label><input type="checkbox" class="ac-member" value="'+m+'" '+(sel.includes(m)?'checked':'')+'>'
+      +'<div class="ac-av" style="background:'+M_COLORS[i]+';">'+m[0]+'</div>'
+      +'<div class="ac-nm">'+m.split(' ')[0]+'</div></label>';
+  });
+  document.getElementById('tmAssigneeChecks').innerHTML=html;
 }
 function toggleAllAC(checked){
   document.querySelectorAll('#tmAssigneeChecks .ac-member').forEach(c=>{c.checked=checked;});
@@ -823,7 +834,7 @@ function toggleAllAC(checked){
 function saveTask(){
   const title=document.getElementById('tm-title').value.trim();
   if(!title){alert('업무명을 입력해주세요.');return;}
-  const assignees=[...document.querySelectorAll('#tmAssigneeChecks input:checked')].map(c=>c.value);
+  const assignees=[...document.querySelectorAll('#tmAssigneeChecks .ac-member:checked')].map(c=>c.value);
   const plan=getPlan(editKey);const id=document.getElementById('tm-id').value;
   const data={title,category:document.getElementById('tm-cat').value,group:'',
     assignees,startDate:document.getElementById('tm-start').value,endDate:document.getElementById('tm-end').value,
