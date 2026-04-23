@@ -891,7 +891,7 @@ function renderGantt(){
   if(!tasks.length){wrap.innerHTML='<div class="empty">이번 2주간 배정된 업무가 없습니다.</div>';return;}
 
   const DOW=['일','월','화','수','목','금','토'];
-  const COLS='180px 52px repeat(5,1fr) 2px repeat(5,1fr)';
+  const COLS='180px 52px repeat(5,1fr) 4px repeat(5,1fr)';
 
   let html='<div style="min-width:560px;">';
 
@@ -900,7 +900,7 @@ function renderGantt(){
   html+='<div style="border-right:1px solid var(--border);padding:4px 8px;font-size:.62rem;color:var(--hint);"></div>';
   html+='<div style="border-right:1px solid var(--border);"></div>';
   html+='<div style="grid-column:3/8;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);border-right:1px solid #EDEEF3;">'+w1lbl+'</div>';
-  html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';
+  html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
   html+='<div style="grid-column:9/14;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);"></div>';
   html+='</div>';
 
@@ -909,10 +909,10 @@ function renderGantt(){
   html+='<div style="padding:6px 10px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);">업무명</div>';
   html+='<div style="padding:6px 4px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);text-align:center;">담당</div>';
   for(let i=0;i<10;i++){
-    if(i===5)html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';
+    if(i===5)html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
     const d=allDays[i],iso=allISOs[i],isT=iso===today;
     html+='<div style="padding:5px 2px;text-align:center;font-size:.67rem;color:'+(isT?'var(--sb-acc)':'var(--sub)')+
-      ';font-weight:'+(isT?'700':'400')+';background:'+(isT?'#FEF2F2':'#F4F5F9')+';border-right:1px solid #EDEEF3;">'+
+      ';font-weight:'+(isT?'700':'400')+';background:'+(isT?'#EDF1FB':'#F4F5F9')+';border-right:1px solid #EDEEF3;">'+
       DOW[d.getDay()]+'<br><span style="font-size:.57rem;color:'+(isT?'var(--sb-acc)':'var(--hint)')+';">'+(d.getMonth()+1)+'/'+d.getDate()+'</span></div>';
   }
   html+='</div>';
@@ -926,7 +926,7 @@ function renderGantt(){
     html+='<div style="padding:4px 10px;font-size:.7rem;font-weight:700;color:'+cc+';border-right:1px solid var(--border);display:flex;align-items:center;">'+cat+'</div>';
     html+='<div style="border-right:1px solid var(--border);"></div>';
     for(let i=0;i<5;i++)html+='<div style="border-right:1px solid #EDEEF3;"></div>';
-    html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';
+    html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
     for(let i=0;i<5;i++)html+='<div style="border-right:1px solid #EDEEF3;"></div>';
     html+='</div>';
 
@@ -936,7 +936,7 @@ function renderGantt(){
       const aColor=firstA?M_COLORS[MEMBERS.indexOf(firstA)]||cc:cc;
       const opHex=t.status==='완료'?'30':'55';
 
-      html+='<div style="display:grid;grid-template-columns:'+COLS+';background:'+bg+';border-bottom:1px solid #EDEEF3;min-height:42px;">';
+      html+='<div style="display:grid;grid-template-columns:'+COLS+';align-items:stretch;background:'+bg+';border-bottom:1px solid #EDEEF3;min-height:42px;">';
       html+='<div style="padding:6px 8px;font-size:.71rem;display:flex;align-items:center;gap:3px;border-right:1px solid var(--border);overflow:hidden;">'+
         (t.status==='완료'?'<span style="color:#15803D;font-size:.65rem;flex-shrink:0;">✓</span>':'')+
         '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="'+esc(t.title)+'">'+esc(t.title)+'</span></div>';
@@ -946,7 +946,7 @@ function renderGantt(){
 
       // 날짜 셀 (0~4 = W1, separator, 5~9 = W2)
       for(let di=0;di<10;di++){
-        if(di===5){html+='<div style="background:#E8EAF0;border-right:1px solid var(--border);"></div>';}
+        if(di===5){html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);align-self:stretch;"></div>';}
         const iso=allISOs[di];
         const inR=t.startDate<=iso&&iso<=t.endDate;
         // 연결 방향 (주 경계에서 끊김)
@@ -955,7 +955,7 @@ function renderGantt(){
         const isT=iso===today;
         const rl=prevIn?'0':'7px',rr=nextIn?'0':'7px';
         const pl=prevIn?'0':'3px',pr=nextIn?'0':'3px';
-        html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(192,57,43,.03)':bg)+';border-right:1px solid #EDEEF3;">';
+        html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(61,95,187,.05)':bg)+';border-right:1px solid #EDEEF3;">';
         if(inR){
           html+='<div style="height:26px;background:'+aColor+opHex+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
