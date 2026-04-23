@@ -454,7 +454,22 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
     </div>
     <div class="modal-body">
       <div class="row" style="margin-bottom:9px;">
-        <div class="f" style="flex:2;"><label>업무명 *</label><input type="text" id="tm-title" placeholder="업무 내용 입력"></div>
+        <div class="f" style="flex:2;">
+          <label>업무명 *</label>
+          <input type="text" id="tm-title" placeholder="업무 내용 입력">
+          <div id="tm-edu-presets" style="display:none;margin-top:5px;">
+            <select onchange="if(this.value){document.getElementById('tm-title').value=this.value;this.value='';}"
+              style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;font-family:inherit;color:var(--sub);background:#FAFBFC;">
+              <option value="">— 빠른 선택 —</option>
+              <option>사용자교육 (1차)</option>
+              <option>개발자교육 (1차)</option>
+              <option>관리자교육</option>
+              <option>사용자교육 (2차)</option>
+              <option>개발자교육 (2차)</option>
+              <option>i-MATRIX교육</option>
+            </select>
+          </div>
+        </div>
         <div class="f"><label>카테고리</label>
           <select id="tm-cat" onchange="buildGroupField(this.value,'')"><option>교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>기타</option></select>
         </div>
@@ -743,6 +758,8 @@ function buildGroupField(cat,val){
   }else{
     wrap.innerHTML='<input type="text" id="tm-group" placeholder="그룹명 (선택)" style="'+S+'" value="'+(val?esc(val):'')+'">';
   }
+  const pre=document.getElementById('tm-edu-presets');
+  if(pre)pre.style.display=cat==='교육'?'block':'none';
 }
 function clearTaskForm(){
   const td=toISO(new Date());
