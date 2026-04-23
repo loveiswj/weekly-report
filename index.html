@@ -687,10 +687,10 @@ function renderTaskTable(){
         rows+='<tr class="task-row" style="'+(t.status==='완료'?'opacity:.55;':'')+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
           '<td style="color:var(--hint);font-size:.69rem;">'+no+'</td>'+
           '<td><span class="cat-badge" style="background:'+cc+'22;color:'+cc+';">'+cat+'</span></td>'+
-          '<td>'+esc(t.title)+(t.group?'<div style="font-size:.63rem;color:var(--hint);">'+esc(t.group)+'</div>':'')+'</td>'+
+          '<td style="font-size:.72rem;">'+esc(t.title)+(t.group?'<div style="font-size:.60rem;color:var(--hint);">'+esc(t.group)+'</div>':'')+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+';">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
-          '<td style="font-size:.72rem;color:var(--sub);">'+(t.startDate||'-')+'</td>'+
-          '<td style="font-size:.72rem;color:var(--sub);">'+(t.endDate||'-')+'</td>'+
+          '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate||'-')+'</td>'+
+          '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate||'-')+'</td>'+
           '<td><div class="pbar"><div class="pbar-track"><div class="pbar-fill" style="width:'+(t.pct||0)+'%"></div></div><span class="pbar-num">'+(t.pct||0)+'%</span></div></td>'+
           '<td><span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span></td>'+
           '<td style="font-size:.69rem;color:var(--sub);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(t.note?esc(t.note):'-')+'</td>'+
@@ -1277,6 +1277,21 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
   addTask('2026-04',mk('Step 5: AI 아바타 렌더링 및 최종 완성'));
   saveData(d);
   localStorage.setItem('bm_edu_v1','1');
+})();
+
+/* 교육 그룹 분리 마이그레이션: 정기교육 / 온사이트 교육 */
+(function migrateEduGroups(){
+  if(localStorage.getItem('bm_edu_grp_v1'))return;
+  const d=loadData();
+  Object.values(d.plans||{}).forEach(plan=>{
+    (plan.tasks||[]).forEach(t=>{
+      if(t.category!=='교육')return;
+      if(t.title&&t.title.includes('온사이트'))t.group='온사이트 교육';
+      else if(!t.group||t.group==='')t.group='정기교육';
+    });
+  });
+  saveData(d);
+  localStorage.setItem('bm_edu_grp_v1','1');
 })();
 
 /* Ctrl+Z 되돌리기 */
