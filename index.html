@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 :root{--sb:#1C2340;--sb-acc:#3D5FBB;--hd:#252D3D;--bg:#F3F5F9;--card:#fff;--border:#DDE2EE;--text:#1A202C;--sub:#64748B;--hint:#9CA3AF;}
-html{font-size:16px;}
+html{font-size:17px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
 /* 사이드바 */
@@ -901,7 +901,8 @@ function renderGantt(){
   if(!tasks.length){wrap.innerHTML='<div class="empty">이번 2주간 배정된 업무가 없습니다.</div>';return;}
 
   const DOW=['일','월','화','수','목','금','토'];
-  const COLS='180px 52px repeat(5,1fr) 4px repeat(5,1fr)';
+  const COLS='180px 52px repeat(10,1fr)';
+  const SEP='border-left:3px solid #C8CDD8;';
 
   let html='<div style="min-width:560px;">';
 
@@ -909,9 +910,8 @@ function renderGantt(){
   html+='<div style="display:grid;grid-template-columns:'+COLS+';background:#F4F5F9;border-bottom:1px solid var(--border);">';
   html+='<div style="border-right:1px solid var(--border);padding:4px 8px;font-size:.62rem;color:var(--hint);"></div>';
   html+='<div style="border-right:1px solid var(--border);"></div>';
-  html+='<div style="grid-column:3/8;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);border-right:1px solid #EDEEF3;">'+w1lbl+'</div>';
-  html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
-  html+='<div style="grid-column:9/14;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);"></div>';
+  html+='<div style="grid-column:3/8;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);">'+w1lbl+'</div>';
+  html+='<div style="grid-column:8/13;text-align:center;padding:5px 4px;font-size:.69rem;font-weight:700;color:var(--sub);'+SEP+'">'+w2lbl+'</div>';
   html+='</div>';
 
   // 요일 헤더
@@ -919,10 +919,10 @@ function renderGantt(){
   html+='<div style="padding:6px 10px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);">업무명</div>';
   html+='<div style="padding:6px 4px;font-size:.68rem;font-weight:700;color:var(--sub);border-right:1px solid var(--border);text-align:center;">담당</div>';
   for(let i=0;i<10;i++){
-    if(i===5)html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
     const d=allDays[i],iso=allISOs[i],isT=iso===today;
+    const sepStyle=i===5?SEP:'';
     html+='<div style="padding:5px 2px;text-align:center;font-size:.67rem;color:'+(isT?'var(--sb-acc)':'var(--sub)')+
-      ';font-weight:'+(isT?'700':'400')+';background:'+(isT?'#EDF1FB':'#F4F5F9')+';border-right:1px solid #EDEEF3;">'+
+      ';font-weight:'+(isT?'700':'400')+';background:'+(isT?'#EDF1FB':'#F4F5F9')+';border-right:1px solid #EDEEF3;'+sepStyle+'">'+
       DOW[d.getDay()]+'<br><span style="font-size:.57rem;color:'+(isT?'var(--sb-acc)':'var(--hint)')+';">'+(d.getMonth()+1)+'/'+d.getDate()+'</span></div>';
   }
   html+='</div>';
@@ -935,9 +935,7 @@ function renderGantt(){
     html+='<div style="display:grid;grid-template-columns:'+COLS+';background:'+cc+'0f;border-bottom:1px solid var(--border);">';
     html+='<div style="padding:4px 10px;font-size:.7rem;font-weight:700;color:'+cc+';border-right:1px solid var(--border);display:flex;align-items:center;">'+cat+'</div>';
     html+='<div style="border-right:1px solid var(--border);"></div>';
-    for(let i=0;i<5;i++)html+='<div style="border-right:1px solid #EDEEF3;"></div>';
-    html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);"></div>';
-    for(let i=0;i<5;i++)html+='<div style="border-right:1px solid #EDEEF3;"></div>';
+    for(let i=0;i<10;i++)html+='<div style="border-right:1px solid #EDEEF3;'+(i===5?SEP:'')+'"></div>';
     html+='</div>';
 
     ct.forEach((t,ri)=>{
@@ -954,18 +952,17 @@ function renderGantt(){
       (t.assignees||[]).forEach(a=>{const ci=MEMBERS.indexOf(a);html+='<span style="font-size:.54rem;font-weight:700;color:'+M_COLORS[ci]+';">'+a.split(' ')[0]+'</span>';});
       html+='</div>';
 
-      // 날짜 셀 (0~4 = W1, separator, 5~9 = W2)
+      // 날짜 셀 (0~4 = W1, 5~9 = W2, 보더로 구분)
       for(let di=0;di<10;di++){
-        if(di===5){html+='<div style="background:#D8DCE8;border-right:1px solid var(--border);align-self:stretch;"></div>';}
         const iso=allISOs[di];
         const inR=t.startDate<=iso&&iso<=t.endDate;
-        // 연결 방향 (주 경계에서 끊김)
         const prevIn=di>0&&di!==5&&t.startDate<=allISOs[di-1]&&allISOs[di-1]<=t.endDate;
         const nextIn=di<9&&di!==4&&t.startDate<=allISOs[di+1]&&allISOs[di+1]<=t.endDate;
         const isT=iso===today;
         const rl=prevIn?'0':'7px',rr=nextIn?'0':'7px';
         const pl=prevIn?'0':'3px',pr=nextIn?'0':'3px';
-        html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(61,95,187,.05)':bg)+';border-right:1px solid #EDEEF3;">';
+        const sepStyle=di===5?SEP:'';
+        html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(61,95,187,.05)':bg)+';border-right:1px solid #EDEEF3;'+sepStyle+'">';
         if(inR){
           html+='<div style="height:26px;background:'+aColor+opHex+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
