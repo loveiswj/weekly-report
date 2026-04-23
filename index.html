@@ -771,7 +771,12 @@ function clearTaskForm(){
   buildGroupField(cat,'');buildAC([]);
 }
 function buildAC(sel){
-  document.getElementById('tmAssigneeChecks').innerHTML=MEMBERS.map(m=>'<label><input type="checkbox" value="'+m+'" '+(sel.includes(m)?'checked':'')+'><span>'+m+'</span></label>').join('');
+  const allChecked=MEMBERS.every(m=>sel.includes(m));
+  const allLabel='<label><input type="checkbox" id="ac-all" onchange="toggleAllAC(this.checked)" '+(allChecked?'checked':'')+'><span>모두</span></label>';
+  document.getElementById('tmAssigneeChecks').innerHTML=allLabel+MEMBERS.map(m=>'<label><input type="checkbox" class="ac-member" value="'+m+'" '+(sel.includes(m)?'checked':'')+'><span>'+m+'</span></label>').join('');
+}
+function toggleAllAC(checked){
+  document.querySelectorAll('#tmAssigneeChecks .ac-member').forEach(c=>{c.checked=checked;});
 }
 function saveTask(){
   const title=document.getElementById('tm-title').value.trim();
