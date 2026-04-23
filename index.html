@@ -135,7 +135,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .cal-date{font-size:.82rem;font-weight:700;color:var(--sub);margin-bottom:4px;flex-shrink:0;}
 .cal-cell.today-cell .cal-date{color:var(--sb-acc);}
 .cal-events{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;}
-.cal-event{font-size:.67rem;padding:3px 6px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-weight:400;line-height:1.4;flex-shrink:0;}
+.cal-event{font-size:.74rem;padding:3px 7px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-weight:400;line-height:1.4;flex-shrink:0;}
 /* 주간보고 */
 .wk-nav{display:flex;align-items:center;gap:6px;}
 .wbtn{padding:4px 10px;border:1px solid var(--border);border-radius:7px;background:var(--card);cursor:pointer;font-size:.78rem;color:var(--sub);}
@@ -451,6 +451,16 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 </div>
 
 <!-- 팀원 모달 -->
+<div class="modal-bg" id="calDayModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-hd">
+      <div class="modal-title" id="calDayTitle"></div>
+      <button class="modal-x" onclick="document.getElementById('calDayModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="calDayBody" style="padding:1rem 1.2rem;"></div>
+  </div>
+</div>
+
 <div class="modal-bg" id="memberModal" onclick="closeMemberModal(event)">
   <div class="modal">
     <div class="modal-hd">
@@ -1004,7 +1014,7 @@ function renderCal(){
       const ac=M_COLORS[MEMBERS.indexOf(fa)]||'#aaa';
       html+='<div class="cal-event" style="background:'+ac+'1A;border-left:3px solid '+ac+(t.status==='완료'?';opacity:.45':'')+'" title="'+esc(t.title)+'">'+esc(t.title)+'</div>';
     });
-    if(dt.length>3)html+='<div style="font-size:.62rem;color:var(--hint);padding:1px 4px;">+'+( dt.length-3)+'건 더</div>';
+    if(dt.length>3)html+='<div onclick="openCalDay(\''+ds+'\')" style="font-size:.63rem;color:var(--sb-acc);padding:2px 4px;cursor:pointer;font-weight:600;">+'+( dt.length-3)+'건 더 보기</div>';
     html+='</div></div>';
     cellCount++;
   }
@@ -1013,6 +1023,28 @@ function renderCal(){
   if(remainder!==0){for(let i=0;i<5-remainder;i++)html+='<div class="cal-cell empty-cell"></div>';}
   html+='</div>';  // .cal-grid-wrap 닫기
   document.getElementById('calGrid').innerHTML=html;
+}
+
+function openCalDay(ds){
+  const key=mkKey(calY,calM);
+  const plan=getPlan(key);
+  const tasks=plan.tasks||[];
+  const dt=tasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=ds&&ds<=t.endDate);
+  const [y,m,d]=ds.split('-');
+  document.getElementById('calDayTitle').textContent=y+'년 '+parseInt(m)+'월 '+parseInt(d)+'일 업무 ('+dt.length+'건)';
+  document.getElementById('calDayBody').innerHTML=dt.length?dt.map(t=>{
+    const fa=t.assignees&&t.assignees[0];
+    const ac=M_COLORS[MEMBERS.indexOf(fa)]||'#aaa';
+    const atags=(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+';">'+a.split(' ')[0]+'</span>';}).join('');
+    return'<div style="display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:7px;border-left:3px solid '+ac+(t.status==='완료'?';opacity:.55':'')+'">'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="font-size:.8rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">'+atags
+      +'<span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span>'
+      +(t.pct?'<span style="font-size:.66rem;color:var(--hint);">'+t.pct+'%</span>':'')
+      +'</div></div></div>';
+  }).join(''):'<div class="empty">해당 날짜 업무가 없습니다</div>';
+  document.getElementById('calDayModal').classList.add('open');
 }
 
 /* 주간보고 자동채우기 */
