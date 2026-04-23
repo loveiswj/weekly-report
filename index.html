@@ -828,7 +828,7 @@ function renderGantt(){
   if(!tasks.length){wrap.innerHTML='<div class="empty">이번 2주간 배정된 업무가 없습니다.</div>';return;}
 
   const DOW=['일','월','화','수','목','금','토'];
-  const COLS='180px 52px repeat(5,1fr) 6px repeat(5,1fr)';
+  const COLS='180px 52px repeat(5,1fr) 2px repeat(5,1fr)';
 
   let html='<div style="min-width:560px;">';
 
@@ -897,7 +897,7 @@ function renderGantt(){
           html+='<div style="height:22px;background:'+aColor+';opacity:'+op+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
             ';display:flex;align-items:center;padding:0 '+(prevIn?'2px':'7px')+';overflow:hidden;">'+
-            (!prevIn?'<span style="font-size:.59rem;color:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</span>':'')+
+            (!prevIn?'<span style="font-size:.55rem;color:#333;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</span>':'')+
             '</div>';
         }
         html+='</div>';
