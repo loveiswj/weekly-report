@@ -488,7 +488,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       </div>
       <div class="row" style="margin-bottom:9px;">
         <div class="f"><label>상태</label>
-          <select id="tm-status"><option value="백로그">백로그</option><option value="진행중">진행중</option><option value="완료">완료</option></select>
+          <select id="tm-status" onchange="if(this.value==='완료')document.getElementById('tm-pct').value=100;"><option value="백로그">백로그</option><option value="진행중">진행중</option><option value="완료">완료</option></select>
         </div>
         <div class="f" style="flex:2;"><label>비고</label><input type="text" id="tm-note" placeholder="메모 (선택)"></div>
       </div>
