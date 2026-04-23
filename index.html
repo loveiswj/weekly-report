@@ -755,8 +755,7 @@ function renderTaskTable(){
     let no=1;
     const cc=CAT_COLORS[cat]||'#aaa';
     const collapsed=_collapsedCats.has(cat);
-    const arrow=collapsed?'▶':'▼';
-    rows+='<tr class="cat-row" onclick="toggleCat(\''+cat+'\')" style="cursor:pointer;"><td colspan="9" style="border-left-color:'+cc+';color:'+cc+';user-select:none;"><span style="margin-right:6px;font-size:.7rem;">'+arrow+'</span>'+cat+'</td></tr>';
+    rows+='<tr class="cat-row" onclick="toggleCat(\''+cat+'\')" style="cursor:pointer;"><td colspan="9" style="border-left-color:'+cc+';color:'+cc+';user-select:none;">'+cat+'</td></tr>';
     if(collapsed)return;
     ct.forEach(t=>{
       {
