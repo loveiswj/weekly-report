@@ -180,14 +180,16 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .today-banner .alert{color:#F59E0B;}
 .cat-badge{display:inline-block;font-size:.64rem;font-weight:600;padding:2px 8px;border-radius:20px;}
 /* TO DO */
-.todo-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:background .15s;}
-.todo-item:hover{background:#FAFBFC;}
-.todo-item.done{background:#F9FAFB;opacity:.6;}
-.todo-chk{width:17px;height:17px;accent-color:var(--sb-acc);cursor:pointer;flex-shrink:0;}
-.todo-text{flex:1;font-size:.82rem;color:var(--text);line-height:1.4;}
-.todo-item.done .todo-text{text-decoration:line-through;color:var(--hint);}
-.todo-del{background:none;border:none;color:var(--hint);cursor:pointer;font-size:.85rem;padding:2px 5px;border-radius:4px;flex-shrink:0;}
-.todo-del:hover{background:#FEF2F2;color:var(--sb-acc);}
+.postit-card{background:linear-gradient(135deg,#FFFDE0 0%,#FFF8B0 100%);border:1px solid #E8D96A;border-radius:14px;padding:1.1rem 1.2rem;box-shadow:3px 4px 12px rgba(200,180,0,.18),0 1px 3px rgba(0,0,0,.06);position:relative;}
+.postit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#F5C842,#FFE066,#F5C842);border-radius:14px 14px 0 0;}
+.todo-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #EDD96A;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.55);transition:background .15s;}
+.todo-item:hover{background:rgba(255,255,255,.85);}
+.todo-item.done{opacity:.55;}
+.todo-chk{width:16px;height:16px;accent-color:#C8960C;cursor:pointer;flex-shrink:0;}
+.todo-text{flex:1;font-size:.81rem;color:#4A3800;line-height:1.4;}
+.todo-item.done .todo-text{text-decoration:line-through;color:#A08030;}
+.todo-del{background:none;border:none;color:#C8A040;cursor:pointer;font-size:.82rem;padding:2px 5px;border-radius:4px;flex-shrink:0;}
+.todo-del:hover{background:rgba(200,100,0,.1);color:#C05000;}
 </style>
 </head>
 <body>
@@ -249,12 +251,30 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <span class="mnav-lbl" id="planMonthLbl"></span>
       <button class="mnav-btn" onclick="movePlanMonth(1)">&#9654;</button>
     </div>
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;">
-        <div class="card-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">주요 KPI</div>
-        <button class="btn btn-s btn-sm" onclick="addKPI()">+ KPI 추가</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start;">
+      <div class="card" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;">
+          <div class="card-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">주요 KPI</div>
+          <button class="btn btn-s btn-sm" onclick="addKPI()">+ KPI 추가</button>
+        </div>
+        <div id="kpiList"></div>
       </div>
-      <div id="kpiList"></div>
+      <div class="postit-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:1.05rem;">📌</span>
+            <span style="font-size:.88rem;font-weight:700;color:#7C5C00;">해야 할 일</span>
+          </div>
+          <span style="font-size:.72rem;color:#A07820;" id="todoStats"></span>
+        </div>
+        <div style="display:flex;gap:7px;margin-bottom:10px;">
+          <input type="text" id="todoInput" placeholder="할 일을 입력하고 Enter" onkeydown="if(event.key==='Enter')addTodo()"
+            style="flex:1;padding:7px 10px;border:1px solid #E8D98A;border-radius:7px;font-size:.8rem;font-family:inherit;background:rgba(255,255,255,.55);outline:none;">
+          <button class="btn btn-sm" onclick="addTodo()" style="background:#F5C842;border:none;color:#5C4000;font-weight:600;border-radius:7px;padding:0 13px;cursor:pointer;font-size:.78rem;">+ 추가</button>
+        </div>
+        <div id="todoList"></div>
+        <div id="todoEmpty" class="empty" style="display:none;padding:.8rem;color:#B08C30;background:none;">할 일을 추가해보세요 ✏️</div>
+      </div>
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;">
@@ -291,20 +311,6 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <div id="taskEmpty" class="empty" style="display:none;">업무를 추가해주세요</div>
     </div>
 
-    <!-- TO DO 섹션 -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;">
-        <div class="card-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">TO DO</div>
-        <span style="font-size:.72rem;color:var(--hint);" id="todoStats"></span>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <input type="text" id="todoInput" placeholder="할 일을 입력하세요" onkeydown="if(event.key==='Enter')addTodo()"
-          style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.82rem;font-family:inherit;">
-        <button class="btn btn-p btn-sm" onclick="addTodo()">+ 추가</button>
-      </div>
-      <div id="todoList"></div>
-      <div id="todoEmpty" class="empty" style="display:none;padding:1rem;">할 일을 추가해보세요</div>
-    </div>
   </div>
 </div>
 
@@ -565,6 +571,7 @@ function switchTab(t){
 
 let planY=new Date().getFullYear(),planM=new Date().getMonth();
 let ganttWkOffset=0;
+const _collapsedCats=new Set();
 let calY=new Date().getFullYear(),calM=new Date().getMonth();
 
 function movePlanMonth(d){planM+=d;if(planM<0){planM=11;planY--;}if(planM>11){planM=0;planY++;}renderPlan();}
@@ -712,7 +719,10 @@ function renderTaskTable(){
   CATS.forEach(cat=>{
     const ct=tasks.filter(t=>t.category===cat);if(!ct.length)return;
     const cc=CAT_COLORS[cat]||'#aaa';
-    rows+='<tr class="cat-row"><td colspan="10" style="border-left-color:'+cc+';color:'+cc+';">'+cat+'</td></tr>';
+    const collapsed=_collapsedCats.has(cat);
+    const arrow=collapsed?'▶':'▼';
+    rows+='<tr class="cat-row" onclick="toggleCat(\''+cat+'\')" style="cursor:pointer;"><td colspan="10" style="border-left-color:'+cc+';color:'+cc+';user-select:none;"><span style="margin-right:6px;font-size:.7rem;">'+arrow+'</span>'+cat+'</td></tr>';
+    if(collapsed)return;
     const groups={};ct.forEach(t=>{const g=t.group||'';if(!groups[g])groups[g]=[];groups[g].push(t);});
     Object.entries(groups).forEach(([grp,gt])=>{
       if(grp)rows+='<tr class="grp-row"><td colspan="10">&#128193; '+esc(grp)+'</td></tr>';
@@ -736,6 +746,7 @@ function renderTaskTable(){
   tbody.innerHTML=rows;
 }
 
+function toggleCat(cat){if(_collapsedCats.has(cat))_collapsedCats.delete(cat);else _collapsedCats.add(cat);renderTaskTable();}
 function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p=getPlan(key);p.tasks=p.tasks.filter(t=>t.id!==id);savePlan(key,p);renderTaskTable();}
 
 let editKey=null;
