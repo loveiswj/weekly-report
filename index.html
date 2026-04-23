@@ -287,20 +287,19 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <div style="overflow-x:auto;">
         <table class="t-table" style="table-layout:fixed;">
           <colgroup>
-            <col style="width:36px;"><col style="width:72px;"><col style="width:200px;"><col style="width:120px;">
+            <col style="width:36px;"><col style="width:220px;"><col style="width:120px;">
             <col style="width:68px;"><col style="width:68px;"><col style="width:100px;"><col style="width:60px;">
             <col style="width:110px;"><col style="width:48px;">
           </colgroup>
           <thead><tr>
             <th>NO<span class="col-resizer" data-col="0"></span></th>
-            <th>카테고리<span class="col-resizer" data-col="1"></span></th>
-            <th>업무명<span class="col-resizer" data-col="2"></span></th>
-            <th>담당자<span class="col-resizer" data-col="3"></span></th>
-            <th>시작일<span class="col-resizer" data-col="4"></span></th>
-            <th>종료일<span class="col-resizer" data-col="5"></span></th>
-            <th>진척률<span class="col-resizer" data-col="6"></span></th>
-            <th>상태<span class="col-resizer" data-col="7"></span></th>
-            <th>비고<span class="col-resizer" data-col="8"></span></th>
+            <th>업무명<span class="col-resizer" data-col="1"></span></th>
+            <th>담당자<span class="col-resizer" data-col="2"></span></th>
+            <th>시작일<span class="col-resizer" data-col="3"></span></th>
+            <th>종료일<span class="col-resizer" data-col="4"></span></th>
+            <th>진척률<span class="col-resizer" data-col="5"></span></th>
+            <th>상태<span class="col-resizer" data-col="6"></span></th>
+            <th>비고<span class="col-resizer" data-col="7"></span></th>
             <th></th>
           </tr></thead>
           <tbody id="taskTbody"></tbody>
@@ -734,14 +733,13 @@ function renderTaskTable(){
     const cc=CAT_COLORS[cat]||'#aaa';
     const collapsed=_collapsedCats.has(cat);
     const arrow=collapsed?'▶':'▼';
-    rows+='<tr class="cat-row" onclick="toggleCat(\''+cat+'\')" style="cursor:pointer;"><td colspan="10" style="border-left-color:'+cc+';color:'+cc+';user-select:none;"><span style="margin-right:6px;font-size:.7rem;">'+arrow+'</span>'+cat+'</td></tr>';
+    rows+='<tr class="cat-row" onclick="toggleCat(\''+cat+'\')" style="cursor:pointer;"><td colspan="9" style="border-left-color:'+cc+';color:'+cc+';user-select:none;"><span style="margin-right:6px;font-size:.7rem;">'+arrow+'</span>'+cat+'</td></tr>';
     if(collapsed)return;
     ct.forEach(t=>{
       {
         rows+='<tr class="task-row" style="'+(t.status==='완료'?'opacity:.55;':'')+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
           '<td style="color:var(--hint);font-size:.69rem;">'+no+'</td>'+
-          '<td><span class="cat-badge" style="background:'+cc+'22;color:'+cc+';">'+cat+'</span></td>'+
-          '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
+          '<td style="font-size:.72rem;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+cc+';margin-right:6px;flex-shrink:0;vertical-align:middle;" title="'+cat+'"></span>'+esc(t.title)+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate?t.endDate.slice(5):'-')+'</td>'+
