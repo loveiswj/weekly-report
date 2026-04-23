@@ -871,10 +871,10 @@ function renderGantt(){
       const bg=ri%2===0?'#fff':'#FAFBFC';
       const firstA=t.assignees&&t.assignees[0];
       const aColor=firstA?M_COLORS[MEMBERS.indexOf(firstA)]||cc:cc;
-      const op=t.status==='완료'?0.35:0.82;
+      const op=t.status==='완료'?0.15:0.25;
 
-      html+='<div style="display:grid;grid-template-columns:'+COLS+';background:'+bg+';border-bottom:1px solid #EDEEF3;min-height:32px;">';
-      html+='<div style="padding:4px 8px;font-size:.71rem;display:flex;align-items:center;gap:3px;border-right:1px solid var(--border);overflow:hidden;">'+
+      html+='<div style="display:grid;grid-template-columns:'+COLS+';background:'+bg+';border-bottom:1px solid #EDEEF3;min-height:42px;">';
+      html+='<div style="padding:6px 8px;font-size:.71rem;display:flex;align-items:center;gap:3px;border-right:1px solid var(--border);overflow:hidden;">'+
         (t.status==='완료'?'<span style="color:#15803D;font-size:.65rem;flex-shrink:0;">✓</span>':'')+
         '<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;" title="'+esc(t.title)+'">'+esc(t.title)+'</span></div>';
       html+='<div style="padding:3px 3px;border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">';
@@ -894,7 +894,7 @@ function renderGantt(){
         const pl=prevIn?'0':'3px',pr=nextIn?'0':'3px';
         html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(192,57,43,.03)':bg)+';border-right:1px solid #EDEEF3;">';
         if(inR){
-          html+='<div style="height:22px;background:'+aColor+';opacity:'+op+
+          html+='<div style="height:26px;background:'+aColor+';opacity:'+op+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
             ';display:flex;align-items:center;padding:0 '+(prevIn?'2px':'7px')+';overflow:hidden;">'+
             (!prevIn?'<span style="font-size:.55rem;color:#333;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</span>':'')+
