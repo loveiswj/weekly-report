@@ -32,7 +32,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 /* 페이지 */
 .tab-page{display:none;}.tab-page.active{display:block;}
 /* 카드 */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;min-width:0;}
 .card-title{font-size:.81rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:.9rem;padding-bottom:.65rem;border-bottom:1px solid var(--border);}
 .card-title::before{content:'';width:3px;height:13px;background:var(--sb-acc);border-radius:2px;flex-shrink:0;}
 /* 월 네비 */
@@ -125,7 +125,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .ac-group label{display:flex;align-items:center;gap:4px;font-size:.77rem;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:20px;user-select:none;}
 .ac-group label:has(input:checked){border-color:var(--sb-acc);background:#EDF1FB;color:var(--sb-acc);font-weight:600;}
 /* 간트 */
-.gantt-wrap{overflow-x:auto;}
+.gantt-wrap{overflow-x:auto;width:100%;}
 /* 캘린더 */
 .cal-grid-wrap{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;grid-auto-rows:130px;}
 .cal-grid-wrap .cal-hd{font-size:.82rem;font-weight:700;color:var(--sub);padding:7px 0;border-bottom:2px solid var(--border);text-align:center;grid-row:auto;height:auto;}
@@ -904,7 +904,7 @@ function renderGantt(){
   const COLS='180px 52px repeat(10,1fr)';
   const SEP='border-left:3px solid #C8CDD8;';
 
-  let html='<div style="min-width:560px;">';
+  let html='<div style="min-width:860px;">';
 
   // 주차 헤더
   html+='<div style="display:grid;grid-template-columns:'+COLS+';background:#F4F5F9;border-bottom:1px solid var(--border);">';
