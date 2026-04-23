@@ -641,14 +641,22 @@ function renderPlan(){
 function renderKPIList(plan,key){
   const el=document.getElementById('kpiList');
   if(!plan.kpis||!plan.kpis.length){el.innerHTML='<div class="empty" style="padding:.8rem;">KPI를 추가하세요</div>';return;}
-  el.innerHTML=plan.kpis.map(k=>'<div style="display:flex;gap:7px;align-items:center;margin-bottom:7px;padding:7px 10px;border:1px solid var(--border);background:var(--bg);">'+
-    '<input type="text" value="'+esc(k.title)+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'title\',this.value)" style="flex:2;min-width:0;padding:5px 8px;border:1px solid var(--border);font-size:.79rem;font-family:inherit;" placeholder="KPI명">'+
-    '<input type="number" value="'+(k.current||0)+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'current\',+this.value)" style="width:65px;padding:5px 7px;border:1px solid var(--border);font-size:.79rem;font-family:inherit;" placeholder="현재">'+
-    '<span style="font-size:.72rem;color:var(--hint);">/ 목표</span>'+
-    '<input type="number" value="'+k.target+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'target\',+this.value)" style="width:65px;padding:5px 7px;border:1px solid var(--border);font-size:.79rem;font-family:inherit;" placeholder="목표">'+
-    '<input type="text" value="'+(k.unit||'')+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'unit\',this.value)" style="width:45px;padding:5px 7px;border:1px solid var(--border);font-size:.79rem;font-family:inherit;" placeholder="단위">'+
-    '<button onclick="delKPI(\''+key+'\',\''+k.id+'\')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:.85rem;padding:2px;">✕</button></div>'
-  ).join('');
+  const INP='border:none;background:transparent;font-family:inherit;outline:none;';
+  el.innerHTML='<div class="kpi-grid">'+plan.kpis.map(k=>{
+    const pct=k.target?Math.min(100,Math.round((k.current||0)/k.target*100)):0;
+    return'<div class="kpi-card" style="position:relative;padding:1rem;">'+
+      '<button onclick="delKPI(\''+key+'\',\''+k.id+'\')" style="position:absolute;top:7px;right:8px;'+INP+'color:var(--hint);cursor:pointer;font-size:.78rem;padding:2px 5px;border-radius:4px;" onmouseover="this.style.color=\'var(--sb-acc)\'" onmouseout="this.style.color=\'var(--hint)\'">✕</button>'+
+      '<input type="text" value="'+esc(k.title)+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'title\',this.value)" placeholder="KPI명" style="'+INP+'width:calc(100% - 24px);font-size:.72rem;color:var(--sub);margin-bottom:5px;border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--border)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
+      '<div style="display:flex;align-items:baseline;gap:4px;margin-bottom:2px;">'+
+        '<input type="number" value="'+(k.current||0)+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'current\',+this.value)" style="'+INP+'width:55px;font-size:1.5rem;font-weight:800;color:var(--text);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--sb-acc)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
+        '<span style="font-size:.73rem;color:var(--hint);">/ </span>'+
+        '<input type="number" value="'+k.target+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'target\',+this.value)" style="'+INP+'width:40px;font-size:.73rem;color:var(--hint);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--border)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
+        '<input type="text" value="'+(k.unit||'')+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'unit\',this.value)" placeholder="단위" style="'+INP+'width:28px;font-size:.73rem;color:var(--hint);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--border)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
+      '</div>'+
+      '<div class="kpi-track"><div class="kpi-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="kpi-pct">'+pct+'% 달성</div>'+
+    '</div>';
+  }).join('')+'</div>';
 }
 
 function addKPI(){const key=mkKey(planY,planM);const plan=getPlan(key);plan.kpis.push({id:genId(),title:'',target:10,unit:'건',current:0});savePlan(key,plan);renderPlan();setTimeout(()=>{const inp=document.querySelectorAll('#kpiList input[type=text]');if(inp.length)inp[inp.length-1].focus();},50);}
@@ -735,7 +743,6 @@ function saveTask(){
   const title=document.getElementById('tm-title').value.trim();
   if(!title){alert('업무명을 입력해주세요.');return;}
   const assignees=[...document.querySelectorAll('#tmAssigneeChecks input:checked')].map(c=>c.value);
-  if(!assignees.length){alert('담당자를 1명 이상 선택해주세요.');return;}
   const plan=getPlan(editKey);const id=document.getElementById('tm-id').value;
   const data={title,category:document.getElementById('tm-cat').value,group:document.getElementById('tm-group').value.trim(),
     assignees,startDate:document.getElementById('tm-start').value,endDate:document.getElementById('tm-end').value,
