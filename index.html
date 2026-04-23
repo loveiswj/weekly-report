@@ -625,7 +625,7 @@ function renderHome(){
       '<div class="mc-bar-wrap"><div class="mc-bar-fill" style="width:'+pct+'%"></div></div>'+
       '<div class="mc-bar-lbl"><span>이번달 완료율</span><span>'+doneT.length+'/'+tasks.length+' ('+pct+'%)</span></div>'+
       (todayT.length?'<div class="task-chips">'+todayT.slice(0,3).map(t=>'<div class="chip today">'+t.title+'</div>').join('')+'</div>':'');
-    div.onclick=()=>openMemberModal(name,ts,plan);
+    div.onclick=()=>openMemberModal(name,ts);
     grid.appendChild(div);
   });
 }
@@ -637,23 +637,41 @@ function isToday(task,ts){
 }
 
 /* 팀원 모달 */
-function openMemberModal(name,ts,plan){
+function openMemberModal(name,ts){
   const i=MEMBERS.indexOf(name);
   document.getElementById('mModalAv').textContent=name.slice(0,1);
   document.getElementById('mModalAv').style.background=M_COLORS[i]||'#1a1a2e';
   document.getElementById('mModalName').textContent=name;
   document.getElementById('mModalDate').textContent=ts+' 기준';
-  const key=mkKey(new Date().getFullYear(),new Date().getMonth());
-  const tasks=(plan.tasks||[]).filter(t=>t.assignees&&t.assignees.includes(name));
+
+  const w1=getWeekDays(0),w2=getWeekDays(1);
+  const w1s=toISO(w1[0]),w1e=toISO(w1[4]);
+  const w2s=toISO(w2[0]),w2e=toISO(w2[4]);
+
+  // 두 주에 걸치는 월 모두 로드
+  const monthKeys=[...new Set([w1[0],w1[4],w2[0],w2[4]].map(d=>mkKey(d.getFullYear(),d.getMonth())))];
+  const seen=new Set();let allTasks=[];
+  monthKeys.forEach(k=>(getPlan(k).tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push({t,k});}}));
+
+  const mine=allTasks.filter(({t})=>t.assignees&&t.assignees.includes(name)&&t.startDate&&t.endDate);
+  const thisWeek=mine.filter(({t})=>t.startDate<=w1e&&t.endDate>=w1s);
+  const nextWeek=mine.filter(({t})=>t.startDate<=w2e&&t.endDate>=w2s);
+
   const body=document.getElementById('mModalBody');
-  if(!tasks.length){body.innerHTML='<div class="empty">이번달 배정된 업무가 없습니다.</div>';document.getElementById('memberModal').classList.add('open');return;}
-  const todayT=tasks.filter(t=>isToday(t,ts));
-  const activeT=tasks.filter(t=>!isToday(t,ts)&&t.status!=='완료');
-  const doneT=tasks.filter(t=>t.status==='완료');
+  if(!thisWeek.length&&!nextWeek.length){
+    body.innerHTML='<div class="empty">금주 및 차주 배정된 업무가 없습니다.</div>';
+    document.getElementById('memberModal').classList.add('open');return;
+  }
+  const weekLbl=(s,e)=>s.slice(5)+' ~ '+e.slice(5);
   let html='';
-  if(todayT.length){html+='<div class="sec-label">오늘 할 일 ('+todayT.length+'건)</div>';html+=todayT.map(t=>mtItem(t,true,false,key)).join('');}
-  if(activeT.length){html+='<div class="sec-label" style="margin-top:'+(todayT.length?'1rem':'0')+';">진행중 업무</div>';html+=activeT.map(t=>mtItem(t,false,false,key)).join('');}
-  if(doneT.length){html+='<div class="sec-label" style="margin-top:1rem;">완료 ('+doneT.length+'건)</div>';html+=doneT.map(t=>mtItem(t,false,true,key)).join('');}
+  if(thisWeek.length){
+    html+='<div class="sec-label">금주 업무 <span style="font-weight:400;font-size:.67rem;color:var(--hint);">('+weekLbl(w1s,w1e)+')</span></div>';
+    html+=thisWeek.map(({t,k})=>mtItem(t,isToday(t,ts),t.status==='완료',k)).join('');
+  }
+  if(nextWeek.length){
+    html+='<div class="sec-label" style="margin-top:'+(thisWeek.length?'1.1rem':'0')+';">차주 업무 <span style="font-weight:400;font-size:.67rem;color:var(--hint);">('+weekLbl(w2s,w2e)+')</span></div>';
+    html+=nextWeek.map(({t,k})=>mtItem(t,false,t.status==='완료',k)).join('');
+  }
   body.innerHTML=html;
   document.getElementById('memberModal').classList.add('open');
 }
