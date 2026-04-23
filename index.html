@@ -74,7 +74,9 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .b-back{background:#F9FAFB;color:#6B7280;}
 /* 테이블 */
 .t-table{width:100%;border-collapse:collapse;font-size:.78rem;}
-.t-table th{font-size:.67rem;color:var(--sub);font-weight:600;padding:7px 9px;text-align:left;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap;}
+.t-table th{font-size:.67rem;color:var(--sub);font-weight:600;padding:7px 9px;text-align:left;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap;position:relative;}
+.col-resizer{position:absolute;right:0;top:0;width:6px;height:100%;cursor:col-resize;user-select:none;z-index:1;}
+.col-resizer:hover,.col-resizer.dragging{background:var(--accent);opacity:.4;}
 .t-table td{padding:6px 8px;border-bottom:1px solid #EDEEF3;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .t-table tr:hover td{background:#FAFBFC;}
 .t-table .cat-row td{background:#F4F5F9;font-size:.72rem;font-weight:700;padding:5px 9px;border-left:3px solid;}
@@ -271,7 +273,18 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
             <col style="width:68px;"><col style="width:68px;"><col style="width:100px;"><col style="width:60px;">
             <col style="width:110px;"><col style="width:48px;">
           </colgroup>
-          <thead><tr><th>NO</th><th>카테고리</th><th>업무명</th><th>담당자</th><th>시작일</th><th>종료일</th><th>진척률</th><th>상태</th><th>비고</th><th></th></tr></thead>
+          <thead><tr>
+            <th>NO<span class="col-resizer" data-col="0"></span></th>
+            <th>카테고리<span class="col-resizer" data-col="1"></span></th>
+            <th>업무명<span class="col-resizer" data-col="2"></span></th>
+            <th>담당자<span class="col-resizer" data-col="3"></span></th>
+            <th>시작일<span class="col-resizer" data-col="4"></span></th>
+            <th>종료일<span class="col-resizer" data-col="5"></span></th>
+            <th>진척률<span class="col-resizer" data-col="6"></span></th>
+            <th>상태<span class="col-resizer" data-col="7"></span></th>
+            <th>비고<span class="col-resizer" data-col="8"></span></th>
+            <th></th>
+          </tr></thead>
           <tbody id="taskTbody"></tbody>
         </table>
       </div>
@@ -1353,7 +1366,38 @@ document.addEventListener('keydown',function(e){
   addSched('this');addSched('this');
   addSched('next');addSched('next');
   renderHome();
+  initColResize();
 })();
+
+function initColResize(){
+  const COL_KEY='bm_col_widths';
+  const cols=document.querySelectorAll('.t-table colgroup col');
+  const saved=JSON.parse(localStorage.getItem(COL_KEY)||'null');
+  if(saved&&saved.length===cols.length)saved.forEach((w,i)=>{if(w)cols[i].style.width=w+'px';});
+  document.querySelectorAll('.col-resizer').forEach(handle=>{
+    handle.addEventListener('mousedown',e=>{
+      e.preventDefault();
+      const ci=parseInt(handle.dataset.col);
+      const col=cols[ci];
+      const startX=e.clientX;
+      const startW=col.offsetWidth||parseInt(col.style.width)||80;
+      handle.classList.add('dragging');
+      function onMove(e){
+        const w=Math.max(36,startW+(e.clientX-startX));
+        col.style.width=w+'px';
+      }
+      function onUp(){
+        handle.classList.remove('dragging');
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
+        const widths=[...cols].map(c=>parseInt(c.style.width)||null);
+        localStorage.setItem(COL_KEY,JSON.stringify(widths));
+      }
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+    });
+  });
+}
 </script>
 </body>
 </html>
