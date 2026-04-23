@@ -75,7 +75,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 /* 테이블 */
 .t-table{width:100%;border-collapse:collapse;font-size:.78rem;}
 .t-table th{font-size:.67rem;color:var(--sub);font-weight:600;padding:7px 9px;text-align:left;border-bottom:2px solid var(--border);background:#FAFBFC;white-space:nowrap;}
-.t-table td{padding:8px 9px;border-bottom:1px solid #EDEEF3;vertical-align:middle;}
+.t-table td{padding:6px 8px;border-bottom:1px solid #EDEEF3;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .t-table tr:hover td{background:#FAFBFC;}
 .t-table .cat-row td{background:#F4F5F9;font-size:.72rem;font-weight:700;padding:5px 9px;border-left:3px solid;}
 .t-table .grp-row td{background:#FAFAFA;font-size:.69rem;font-weight:600;color:var(--sub);padding:4px 9px 4px 22px;}
@@ -265,7 +265,12 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
         <select id="fCat" onchange="renderTaskTable()"><option value="">전체 카테고리</option></select>
       </div>
       <div style="overflow-x:auto;">
-        <table class="t-table">
+        <table class="t-table" style="table-layout:fixed;">
+          <colgroup>
+            <col style="width:36px;"><col style="width:72px;"><col style="min-width:160px;"><col style="width:130px;">
+            <col style="width:84px;"><col style="width:84px;"><col style="width:100px;"><col style="width:60px;">
+            <col style="width:110px;"><col style="width:48px;">
+          </colgroup>
           <thead><tr><th>NO</th><th>카테고리</th><th>업무명</th><th>담당자</th><th>시작일</th><th>종료일</th><th>진척률</th><th>상태</th><th>비고</th><th></th></tr></thead>
           <tbody id="taskTbody"></tbody>
         </table>
@@ -693,7 +698,7 @@ function renderTaskTable(){
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate||'-')+'</td>'+
           '<td><div class="pbar"><div class="pbar-track"><div class="pbar-fill" style="width:'+(t.pct||0)+'%"></div></div><span class="pbar-num">'+(t.pct||0)+'%</span></div></td>'+
           '<td><span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span></td>'+
-          '<td style="font-size:.69rem;color:var(--sub);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(t.note?esc(t.note):'-')+'</td>'+
+          '<td style="font-size:.67rem;color:var(--sub);">'+(t.note?esc(t.note):'-')+'</td>'+
           '<td onclick="event.stopPropagation()"><button class="btn btn-d btn-sm" onclick="delTask(\''+key+'\',\''+t.id+'\')">삭제</button></td>'+
         '</tr>';
         no++;
