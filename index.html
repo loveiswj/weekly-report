@@ -451,11 +451,11 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <div class="row" style="margin-bottom:9px;">
         <div class="f" style="flex:2;"><label>업무명 *</label><input type="text" id="tm-title" placeholder="업무 내용 입력"></div>
         <div class="f"><label>카테고리</label>
-          <select id="tm-cat"><option>교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>기타</option></select>
+          <select id="tm-cat" onchange="buildGroupField(this.value,'')"><option>교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>기타</option></select>
         </div>
       </div>
       <div class="row" style="margin-bottom:9px;">
-        <div class="f"><label>그룹 (선택)</label><input type="text" id="tm-group" placeholder="예: 정기교육, AI활용 기획안"></div>
+        <div class="f"><label>그룹 (선택)</label><div id="tm-group-wrap"></div></div>
       </div>
       <div style="margin-bottom:9px;">
         <label style="font-size:.67rem;color:var(--sub);display:block;margin-bottom:5px;font-weight:500;">담당자 * (복수 선택 가능)</label>
@@ -719,7 +719,7 @@ function openEditTask(key,id){
   document.getElementById('tm-id').value=id;
   document.getElementById('tm-title').value=t.title||'';
   document.getElementById('tm-cat').value=t.category||'교육';
-  document.getElementById('tm-group').value=t.group||'';
+  buildGroupField(t.category||'교육',t.group||'');
   document.getElementById('tm-start').value=t.startDate||'';
   document.getElementById('tm-end').value=t.endDate||'';
   document.getElementById('tm-pct').value=t.pct||0;
@@ -728,13 +728,25 @@ function openEditTask(key,id){
   buildAC(t.assignees||[]);
   document.getElementById('taskModal').classList.add('open');
 }
+const GROUP_OPTS={'교육':['정기교육','온사이트 교육']};
+function buildGroupField(cat,val){
+  const wrap=document.getElementById('tm-group-wrap');if(!wrap)return;
+  const S='padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;color:var(--text);background:#fff;font-family:inherit;width:100%;';
+  if(GROUP_OPTS[cat]){
+    wrap.innerHTML='<select id="tm-group" style="'+S+'">'+
+      GROUP_OPTS[cat].map(g=>'<option'+(val===g?' selected':'')+'>'+g+'</option>').join('')+'</select>';
+  }else{
+    wrap.innerHTML='<input type="text" id="tm-group" placeholder="그룹명 (선택)" style="'+S+'" value="'+(val?esc(val):'')+'">';
+  }
+}
 function clearTaskForm(){
   const td=toISO(new Date());
-  ['tm-id','tm-title','tm-group','tm-note'].forEach(id=>document.getElementById(id).value='');
+  ['tm-id','tm-title','tm-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('tm-start').value=td;
   document.getElementById('tm-end').value=td;
-  document.getElementById('tm-cat').value='교육';document.getElementById('tm-pct').value='0';document.getElementById('tm-status').value='백로그';
-  buildAC([]);
+  const cat='교육';
+  document.getElementById('tm-cat').value=cat;document.getElementById('tm-pct').value='0';document.getElementById('tm-status').value='백로그';
+  buildGroupField(cat,'');buildAC([]);
 }
 function buildAC(sel){
   document.getElementById('tmAssigneeChecks').innerHTML=MEMBERS.map(m=>'<label><input type="checkbox" value="'+m+'" '+(sel.includes(m)?'checked':'')+'><span>'+m+'</span></label>').join('');
