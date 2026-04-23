@@ -490,12 +490,20 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
             <select onchange="if(this.value){document.getElementById('tm-title').value=this.value;this.value='';}"
               style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;font-family:inherit;color:var(--sub);background:#FAFBFC;">
               <option value="">— 교육과정 선택 —</option>
-              <option>사용자교육 (1차)</option>
-              <option>개발자교육 (1차)</option>
-              <option>관리자교육</option>
-              <option>사용자교육 (2차)</option>
-              <option>개발자교육 (2차)</option>
-              <option>i-MATRIX교육</option>
+              <optgroup label="정기교육">
+                <option>사용자교육 (1차)</option>
+                <option>개발자교육 (1차)</option>
+                <option>관리자교육</option>
+                <option>사용자교육 (2차)</option>
+                <option>개발자교육 (2차)</option>
+                <option>i-MATRIX교육</option>
+              </optgroup>
+              <optgroup label="온사이트 교육">
+                <option>온사이트 사용자교육</option>
+                <option>온사이트 개발자교육</option>
+                <option>온사이트 관리자교육</option>
+                <option>온사이트 i-MATRIX교육</option>
+              </optgroup>
             </select>
           </div>
         </div>
