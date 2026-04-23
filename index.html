@@ -934,7 +934,7 @@ function renderGantt(){
       const bg=ri%2===0?'#fff':'#FAFBFC';
       const firstA=t.assignees&&t.assignees[0];
       const aColor=firstA?M_COLORS[MEMBERS.indexOf(firstA)]||cc:cc;
-      const op=t.status==='완료'?0.15:0.25;
+      const opHex=t.status==='완료'?'30':'55';
 
       html+='<div style="display:grid;grid-template-columns:'+COLS+';background:'+bg+';border-bottom:1px solid #EDEEF3;min-height:42px;">';
       html+='<div style="padding:6px 8px;font-size:.71rem;display:flex;align-items:center;gap:3px;border-right:1px solid var(--border);overflow:hidden;">'+
@@ -957,10 +957,10 @@ function renderGantt(){
         const pl=prevIn?'0':'3px',pr=nextIn?'0':'3px';
         html+='<div style="padding:5px '+pr+' 5px '+pl+';background:'+(isT?'rgba(192,57,43,.03)':bg)+';border-right:1px solid #EDEEF3;">';
         if(inR){
-          html+='<div style="height:26px;background:'+aColor+';opacity:'+op+
+          html+='<div style="height:26px;background:'+aColor+opHex+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
             ';display:flex;align-items:center;padding:0 '+(prevIn?'2px':'7px')+';overflow:hidden;">'+
-            (!prevIn?'<span style="font-size:.55rem;color:#333;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</span>':'')+
+            (!prevIn?'<span style="font-size:.56rem;color:#1A202C;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;">'+esc(t.title)+'</span>':'')+
             '</div>';
         }
         html+='</div>';
