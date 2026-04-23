@@ -191,7 +191,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .todo-item:hover{background:rgba(255,255,255,.7);}
 .todo-item.done{opacity:.45;}
 .todo-chk{width:13px;height:13px;accent-color:#A09840;cursor:pointer;flex-shrink:0;}
-.todo-text{flex:1;font-size:.69rem;color:#4A4420;line-height:1.35;font-weight:400;}
+.todo-text{flex:1;font-size:.69rem;color:#4A4420;line-height:1.35;font-weight:400;cursor:text;}
 .todo-item.done .todo-text{text-decoration:line-through;color:#A09840;}
 .todo-del{background:none;border:none;color:#A09040;cursor:pointer;font-size:.82rem;padding:2px 5px;border-radius:4px;flex-shrink:0;}
 .todo-del:hover{background:rgba(0,0,0,.06);color:#604000;}
@@ -862,7 +862,7 @@ function renderTodos(){
   list.innerHTML=todos.map(t=>
     '<div class="todo-item'+(t.done?' done':'')+'" id="td-'+t.id+'">'+
     '<input type="checkbox" class="todo-chk" '+(t.done?'checked':'')+' onchange="toggleTodo(\''+key+'\',\''+t.id+'\',this)">'+
-    '<span class="todo-text">'+esc(t.text)+'</span>'+
+    '<span class="todo-text" title="클릭하여 수정" onclick="editTodo(\''+key+'\',\''+t.id+'\',this)">'+esc(t.text)+'</span>'+
     '<button class="todo-del" onclick="deleteTodo(\''+key+'\',\''+t.id+'\')">✕</button>'+
     '</div>'
   ).join('');
@@ -881,6 +881,19 @@ function toggleTodo(key,id,cb){
 function deleteTodo(key,id){
   const plan=getPlan(key);plan.todos=plan.todos.filter(x=>x.id!==id);
   savePlan(key,plan);renderTodos();
+}
+function editTodo(key,id,el){
+  const inp=document.createElement('input');
+  inp.type='text';inp.value=el.textContent;
+  inp.style.cssText='flex:1;font-size:.69rem;border:none;outline:1px solid #C8B840;border-radius:3px;padding:1px 5px;font-family:inherit;color:#4A4420;background:#FFFFF0;min-width:0;width:100%;';
+  el.replaceWith(inp);inp.focus();inp.select();
+  function save(){
+    const v=inp.value.trim();
+    if(v){const plan=getPlan(key);const t=plan.todos.find(x=>x.id===id);if(t){t.text=v;savePlan(key,plan);}}
+    renderTodos();
+  }
+  inp.onblur=save;
+  inp.onkeydown=e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape')renderTodos();};
 }
 
 /* 간트 */
