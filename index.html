@@ -721,7 +721,10 @@ function openEditTask(key,id){
   document.getElementById('taskModal').classList.add('open');
 }
 function clearTaskForm(){
-  ['tm-id','tm-title','tm-group','tm-start','tm-end','tm-note'].forEach(id=>document.getElementById(id).value='');
+  const td=toISO(new Date());
+  ['tm-id','tm-title','tm-group','tm-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tm-start').value=td;
+  document.getElementById('tm-end').value=td;
   document.getElementById('tm-cat').value='교육';document.getElementById('tm-pct').value='0';document.getElementById('tm-status').value='백로그';
   buildAC([]);
 }
