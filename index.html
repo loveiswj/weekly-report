@@ -749,9 +749,10 @@ function renderTaskTable(){
   if(fc)tasks=tasks.filter(t=>t.category===fc);
   if(!tasks.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-  let rows='',no=1;
+  let rows='';
   CATS.forEach(cat=>{
     const ct=tasks.filter(t=>t.category===cat);if(!ct.length)return;
+    let no=1;
     const cc=CAT_COLORS[cat]||'#aaa';
     const collapsed=_collapsedCats.has(cat);
     const arrow=collapsed?'▶':'▼';
