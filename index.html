@@ -1179,8 +1179,8 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 
 /* 6.25 행사 데이터 등록 */
 (function seedEventData(){
-  if(localStorage.getItem('bm_event_v3'))return;
-  ['bm_event_v1','bm_event_v2'].forEach(k=>localStorage.removeItem(k));
+  if(localStorage.getItem('bm_event_v4'))return;
+  ['bm_event_v1','bm_event_v2','bm_event_v3'].forEach(k=>localStorage.removeItem(k));
   const d=loadData();
   ['2026-04','2026-05','2026-06'].forEach(k=>{
     if(d.plans[k]&&d.plans[k].tasks)
@@ -1214,7 +1214,7 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
   addTask('2026-06',mk('감사 메일 발송','2026-06-26','2026-06-26','참석자 대상 감사 인사 및 자료 공유'));
   addTask('2026-06',mk('설문 분석 결과 보고','2026-06-30','2026-06-30','만족도 설문 결과 정리 및 최종 보고'));
   saveData(d);
-  localStorage.setItem('bm_event_v3','1');
+  localStorage.setItem('bm_event_v4','1');
 })();
 
 /* AI 활용 정기교육 기획안 데이터 등록 */
