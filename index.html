@@ -267,8 +267,8 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <div style="overflow-x:auto;">
         <table class="t-table" style="table-layout:fixed;">
           <colgroup>
-            <col style="width:36px;"><col style="width:72px;"><col style="min-width:160px;"><col style="width:130px;">
-            <col style="width:84px;"><col style="width:84px;"><col style="width:100px;"><col style="width:60px;">
+            <col style="width:36px;"><col style="width:72px;"><col style="width:200px;"><col style="width:120px;">
+            <col style="width:68px;"><col style="width:68px;"><col style="width:100px;"><col style="width:60px;">
             <col style="width:110px;"><col style="width:48px;">
           </colgroup>
           <thead><tr><th>NO</th><th>카테고리</th><th>업무명</th><th>담당자</th><th>시작일</th><th>종료일</th><th>진척률</th><th>상태</th><th>비고</th><th></th></tr></thead>
@@ -709,8 +709,8 @@ function renderTaskTable(){
           '<td><span class="cat-badge" style="background:'+cc+'22;color:'+cc+';">'+cat+'</span></td>'+
           '<td style="font-size:.72rem;">'+esc(t.title)+(t.group?'<div style="font-size:.60rem;color:var(--hint);">'+esc(t.group)+'</div>':'')+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+';">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
-          '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate||'-')+'</td>'+
-          '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate||'-')+'</td>'+
+          '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
+          '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate?t.endDate.slice(5):'-')+'</td>'+
           '<td><div class="pbar"><div class="pbar-track"><div class="pbar-fill" style="width:'+(t.pct||0)+'%"></div></div><span class="pbar-num">'+(t.pct||0)+'%</span></div></td>'+
           '<td><span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span></td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.note?esc(t.note):'-')+'</td>'+
