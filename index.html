@@ -226,6 +226,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       <span id="topbarAlert" class="topbar-alert"></span>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <span id="syncStatus" style="font-size:.68rem;font-weight:600;letter-spacing:.02em;min-width:70px;text-align:right;"></span>
       <button id="undoBtn" onclick="undoLast()" disabled
         style="display:flex;align-items:center;gap:4px;padding:4px 11px;border:1px solid rgba(255,255,255,.18);border-radius:7px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);font-size:.72rem;font-family:inherit;cursor:pointer;transition:all .15s;"
         title="되돌리기 (Ctrl+Z)">↩ 되돌리기</button>
@@ -385,8 +386,8 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
       </div>
       <div id="body-sched">
         <div class="sched-grid">
-          <div class="sbox"><div class="sbox-hd this">이번 주 일정</div><div class="sbox-body" id="thisWeekList"></div><div style="padding:0 10px 9px"><button class="add-btn" onclick="addSched('this')">+ 추가</button></div></div>
-          <div class="sbox"><div class="sbox-hd next">다음 주 일정</div><div class="sbox-body" id="nextWeekList"></div><div style="padding:0 10px 9px"><button class="add-btn" onclick="addSched('next')">+ 추가</button></div></div>
+          <div class="sbox"><div class="sbox-hd this" style="display:flex;justify-content:space-between;align-items:center;">이번 주 일정<button onclick="loadSchedsFromTasks('this')" style="font-size:.67rem;padding:2px 8px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;border-radius:3px;cursor:pointer;">불러오기</button></div><div class="sbox-body" id="thisWeekList"></div><div style="padding:0 10px 9px"><button class="add-btn" onclick="addSched('this')">+ 추가</button></div></div>
+          <div class="sbox"><div class="sbox-hd next" style="display:flex;justify-content:space-between;align-items:center;">다음 주 일정<button onclick="loadSchedsFromTasks('next')" style="font-size:.67rem;padding:2px 8px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;border-radius:3px;cursor:pointer;">불러오기</button></div><div class="sbox-body" id="nextWeekList"></div><div style="padding:0 10px 9px"><button class="add-btn" onclick="addSched('next')">+ 추가</button></div></div>
         </div>
         <div style="margin-top:10px;border:1px solid var(--border);">
           <div style="padding:7px 11px;font-size:.76rem;font-weight:700;background:#FFFBEB;color:#B45309;">휴가 현황</div>
@@ -537,6 +538,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const MEMBERS=['김원정 수석','장민지 선임','제현재 사원','허선희'];
 const MANAGER='김원정 수석';
@@ -544,6 +546,36 @@ const M_COLORS=['#6B84B8','#5A9080','#8878B0','#B08060'];
 const CATS=['교육','온사이트 교육','그룹장님 지시업무','주요 업무','커뮤니티','기타'];
 const CAT_COLORS={교육:'#5A78B0','온사이트 교육':'#4A8898','그룹장님 지시업무':'#7B6AA8','주요 업무':'#4A8870',커뮤니티:'#9A7850',기타:'#7A8898'};
 const PLAN_KEY='bm_plan_v3';
+
+/* ── Supabase 클라우드 동기화 ── */
+const SB_URL='https://qfzwsthshflndwwjsikp.supabase.co';
+const SB_KEY='sb_publishable_e6NdNG3UqxBQZS2FMp5srg_7ZQBB-sv';
+const _sb=supabase.createClient(SB_URL,SB_KEY);
+let _syncTimer=null;
+
+function setSyncStatus(s){
+  const el=document.getElementById('syncStatus');
+  if(!el)return;
+  if(s==='ok'){el.textContent='● 동기화됨';el.style.color='#4ade80';}
+  else if(s==='saving'){el.textContent='↑ 저장 중...';el.style.color='#fbbf24';}
+  else if(s==='loading'){el.textContent='↓ 불러오는 중...';el.style.color='#60a5fa';}
+  else{el.textContent='⚠ 오프라인';el.style.color='#f87171';}
+}
+
+async function cloudLoad(){
+  try{
+    const {data,error}=await _sb.from('app_state').select('data').eq('id','main').single();
+    if(data&&data.data){localStorage.setItem(PLAN_KEY,JSON.stringify(data.data));return true;}
+  }catch(e){console.warn('cloud load:',e);}
+  return false;
+}
+
+async function cloudSave(d){
+  try{
+    await _sb.from('app_state').upsert({id:'main',data:d,updated_at:new Date().toISOString()},{onConflict:'id'});
+    setSyncStatus('ok');
+  }catch(e){console.warn('cloud save:',e);setSyncStatus('error');}
+}
 
 const _undoStack=[];
 function loadData(){try{return JSON.parse(localStorage.getItem(PLAN_KEY))||{plans:{}};}catch{return{plans:{}};}}
@@ -553,6 +585,9 @@ function saveData(d){
   localStorage.setItem(PLAN_KEY,JSON.stringify(d));
   const btn=document.getElementById('undoBtn');
   if(btn){btn.disabled=false;btn.style.color='rgba(255,255,255,.75)';btn.style.borderColor='rgba(255,255,255,.3)';}
+  setSyncStatus('saving');
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>cloudSave(d),800);
 }
 function undoLast(){
   if(!_undoStack.length)return;
@@ -583,6 +618,10 @@ function switchTab(t){
   if(t==='tasks')renderPlan();
   if(t==='gantt')renderGantt();
   if(t==='cal')renderCal();
+  if(t==='report'){
+    if(!document.getElementById('thisWeekList').children.length)loadSchedsFromTasks('this');
+    if(!document.getElementById('nextWeekList').children.length)loadSchedsFromTasks('next');
+  }
 }
 
 let planY=new Date().getFullYear(),planM=new Date().getMonth();
@@ -762,7 +801,7 @@ function renderTaskTable(){
         const rowStyle=t.status==='완료'?'opacity:.55;':t.status==='진행중'?'background:#EEF3FF;border-left:3px solid var(--sb-acc);':'';
         rows+='<tr class="task-row" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
           '<td style="color:var(--hint);font-size:.69rem;">'+no+'</td>'+
-          '<td style="font-size:.72rem;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+cc+';margin-right:6px;flex-shrink:0;vertical-align:middle;" title="'+cat+'"></span>'+esc(t.title)+'</td>'+
+          '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate?t.endDate.slice(5):'-')+'</td>'+
@@ -1139,6 +1178,39 @@ function addSched(w){
   div.innerHTML='<input type="text" placeholder="일정 내용"><button class="idel" onclick="this.parentElement.remove()">✕</button>';
   list.appendChild(div);
 }
+function loadSchedsFromTasks(w){
+  const off=w==='this'?weekOff:weekOff+1;
+  const days=getWeekDays(off);
+  const wS=toISO(days[0]),wE=toISO(days[4]);
+  // 전체 저장 데이터에서 모든 업무 수집
+  const allData=loadData();
+  const seen=new Set();const all=[];
+  Object.values(allData.plans||{}).forEach(plan=>{
+    (plan.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);all.push(t);}});
+  });
+  // 1순위: 해당 주에 날짜가 겹치는 업무
+  let wkTasks=all.filter(t=>t.startDate&&t.endDate&&t.startDate<=wE&&t.endDate>=wS&&t.status!=='백로그'&&t.status!=='완료');
+  // 2순위: 날짜 없거나 범위 밖이어도 진행중/예정 업무 포함 (백로그·완료 제외)
+  if(!wkTasks.length) wkTasks=all.filter(t=>t.status!=='백로그'&&t.status!=='완료'&&t.title);
+  const listId=w==='this'?'thisWeekList':'nextWeekList';
+  const list=document.getElementById(listId);
+  [...list.querySelectorAll('.irow')].forEach(el=>el.remove());
+  if(!wkTasks.length){addSched(w);return;}
+  wkTasks.forEach(t=>{
+    const fmt=d=>(d.getMonth()+1)+'/'+d.getDate();
+    let prefix='';
+    if(t.startDate&&t.endDate){
+      const aS=new Date(Math.max(new Date(t.startDate).getTime(),new Date(wS).getTime()));
+      const aE=new Date(Math.min(new Date(t.endDate).getTime(),new Date(wE).getTime()));
+      if(aS<=aE){const s=fmt(aS),e=fmt(aE);prefix=(s===e?s:s+'~'+e)+' ';}
+      else{prefix=fmt(new Date(t.startDate))+' ';}
+    }
+    const text=prefix+t.title+(t.assignees&&t.assignees.length?' ('+t.assignees.map(a=>a.split(' ')[0]).join(', ')+')':'');
+    const div=document.createElement('div');div.className='irow';
+    div.innerHTML='<input type="text" placeholder="일정 내용" value="'+esc(text)+'"><button class="idel" onclick="this.parentElement.remove()">✕</button>';
+    list.appendChild(div);
+  });
+}
 function getScheds(w){return[...document.getElementById(w==='this'?'thisWeekList':'nextWeekList').children].map(r=>r.querySelector('input')?.value.trim()).filter(Boolean);}
 
 function addVac(w){
@@ -1182,184 +1254,152 @@ async function generatePPT(){
   const team=document.getElementById('rteam').value||'솔루션 교육팀';
   const rdate=document.getElementById('rdate').value;
   const tasks=getRTasks(),thisS=getScheds('this'),nextS=getScheds('next');
-  const doneList=getLines('doneList');
-  const issueText=document.getElementById('rIssues').value.trim()||'해당 없음';
-  const reqText=document.getElementById('rRequests').value.trim()||'해당 없음';
+  const issueText=document.getElementById('rIssues').value.trim();
+  const reqText=document.getElementById('rRequests').value.trim();
   const vacThis=getVacs('this'),vacNext=getVacs('next');
   const qas=getQAs();
-  const NAVY='1C2340',GOLD='FBAE40',WHITE='FFFFFF',LTGREY='F8F9FC',DKTXT='2D3748',BLUE='2563EB',GREEN='16A34A';
-  const stC={완료:'2D6A4F',진행중:'B45309',예정:BLUE,지연:'DC2626'};
+  // 월주차 계산
+  const wkMon=new Date(wk.start);
+  const thu=new Date(wkMon);thu.setDate(wkMon.getDate()+3);
+  const yr=thu.getFullYear(),mo=thu.getMonth(),moNum=mo+1;
+  const firstDay=new Date(yr,mo,1);
+  const daysToMon=firstDay.getDay()===0?6:firstDay.getDay()-1;
+  const firstMon=new Date(firstDay);firstMon.setDate(firstDay.getDate()-daysToMon);
+  const weekNo=Math.round((wkMon-firstMon)/(7*24*3600*1000))+1;
+  const weekTitle=yr+'년 '+moNum+'월 '+weekNo+'주차';
+  const fileDate=rdate.split(' ')[0].replace(/\./g,'');
+  const NAVY='1A1A2E',GOLD='FBAE40',WHITE='FFFFFF',LTGREY='F8F9FC',DKTXT='2D3748';
+  const stC={완료:'2D6A4F',진행중:'B45309',예정:'2563EB',지연:'DC2626'};
   try{
     const pptx=new PptxGenJS();pptx.layout='LAYOUT_WIDE';
-    // 콘텐츠 슬라이드 생성 (회사 템플릿 양식)
+    // 콘텐츠 슬라이드 템플릿 (회사 배경 이미지 풀 사이즈 적용)
     function cS(ttl){
       const s=pptx.addSlide();
-      s.addShape(pptx.shapes.RECTANGLE,{x:0,y:0,w:13.33,h:7.5,fill:{color:WHITE}});
-      s.addImage({data:PPT_BG_CONTENT,x:0,y:5.1,w:13.33,h:2.4,sizing:{type:'cover',w:13.33,h:2.4}});
-      s.addImage({data:PPT_LOGO_SMALL,x:11.2,y:.17,w:1.9,h:.56});
-      s.addShape(pptx.shapes.RECTANGLE,{x:0,y:0,w:13.33,h:.07,fill:{color:GOLD},line:{type:'none'}});
-      s.addText(ttl,{x:.5,y:.18,w:10.4,h:.58,fontSize:22,fontFace:'Pretendard',bold:true,color:NAVY});
-      s.addShape(pptx.shapes.RECTANGLE,{x:.5,y:.82,w:12.3,h:.025,fill:{color:'E0E4EC'},line:{type:'none'}});
+      s.addImage({data:PPT_BG_CONTENT,x:0,y:0,w:13.33,h:7.5,sizing:{type:'cover',w:13.33,h:7.5}});
+      s.addImage({data:PPT_LOGO_SMALL,x:11.9,y:7.16,w:1.06,h:0.26});
+      s.addText(ttl,{x:0.45,y:0.30,w:10.0,h:0.65,fontSize:20,fontFace:'Pretendard',bold:true,color:NAVY});
+      s.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:1.02,w:12.4,h:0.005,fill:{color:'BBBBBB'},line:{type:'none'}});
+      s.addText(team,{x:8.5,y:7.18,w:4.5,h:0.22,fontSize:11,fontFace:'Pretendard',color:'AAAAAA',align:'right'});
       return s;
     }
 
     // ── 슬라이드 1: 표지 ──
     const s1=pptx.addSlide();
     s1.addImage({data:PPT_BG_TITLE,x:0,y:0,w:13.33,h:7.5,sizing:{type:'cover',w:13.33,h:7.5}});
-    s1.addImage({data:PPT_LOGO_BIG,x:10.2,y:.25,w:2.9,h:.85});
-    s1.addShape(pptx.shapes.RECTANGLE,{x:.55,y:3.55,w:.07,h:1.55,fill:{color:GOLD},line:{type:'none'}});
-    s1.addText('솔루션 교육팀 주간보고',{x:.82,y:3.6,w:9.5,h:.88,fontSize:34,fontFace:'Pretendard',bold:true,color:NAVY});
-    s1.addText(wk.title,{x:.82,y:4.55,w:9,h:.52,fontSize:18,fontFace:'Pretendard',color:'555555'});
-    s1.addText('작성자: '+author,{x:.6,y:6.0,w:5,h:.32,fontSize:11,fontFace:'Pretendard',color:'666666'});
-    s1.addText(rdate,{x:9,y:6.0,w:3.8,h:.32,fontSize:11,fontFace:'Pretendard',color:'666666',align:'right'});
+    s1.addImage({data:PPT_LOGO_BIG,x:11.28,y:0.415,w:1.33,h:0.33});
+    s1.addText(team+' 주간업무보고',{x:0.70,y:3.59,w:11.0,h:1.10,fontSize:38,fontFace:'Pretendard',bold:true,color:NAVY});
+    s1.addText(weekTitle,{x:0.70,y:4.74,w:11.0,h:0.60,fontSize:22,fontFace:'Pretendard',color:'4A5568'});
+    s1.addShape(pptx.shapes.RECTANGLE,{x:0.70,y:5.44,w:3.50,h:0.006,fill:{color:'AAAACC'},line:{type:'none'}});
+    s1.addText(author,{x:0.70,y:5.59,w:6.0,h:0.35,fontSize:15,fontFace:'Pretendard',bold:true,color:'2D3047'});
+    s1.addText(rdate,{x:0.70,y:5.94,w:6.0,h:0.32,fontSize:14,fontFace:'Pretendard',color:'777799'});
 
-    // ── 슬라이드 2: 주간 업무 요약 (금주/차주 2단) ──
-    const s2=cS('주간 업무 요약');
-    const thisItems=thisS.length?thisS:['입력된 내용 없음'];
-    const nextItems=nextS.length?nextS:['입력된 내용 없음'];
-    // 금주
-    s2.addShape(pptx.shapes.RECTANGLE,{x:.5,y:1.05,w:5.8,h:.48,fill:{color:'EEF9F0'},line:{color:'BBF7D0',width:.5}});
-    s2.addShape(pptx.shapes.OVAL,{x:.62,y:1.14,w:.3,h:.3,fill:{color:GREEN},line:{type:'none'}});
-    s2.addText('V',{x:.62,y:1.14,w:.3,h:.3,fontSize:9,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-    s2.addText('금주 업무',{x:1.05,y:1.05,w:4.9,h:.48,fontSize:14,fontFace:'Pretendard',bold:true,color:NAVY,valign:'middle'});
-    thisItems.forEach((txt,i)=>{
-      s2.addShape(pptx.shapes.OVAL,{x:.65,y:1.75+i*.52,w:.1,h:.1,fill:{color:NAVY},line:{type:'none'}});
-      s2.addText(txt,{x:.88,y:1.68+i*.52,w:5.1,h:.44,fontSize:11,fontFace:'Pretendard',color:DKTXT});
+    // ── 슬라이드 2: 주요 진행 업무 ──
+    const s2=cS('주요 진행 업무');
+    const tl=tasks.length?tasks:[{cat:'(없음)',content:'업무 없음',pct:'0',status:'예정'}];
+    const rH=0.52,startY=1.12,hH=0.38;
+    const cols=[[0.45,1.7,'구분'],[2.2,5.4,'업무 내용'],[7.7,2.6,'진척률'],[10.4,2.5,'상태']];
+    cols.forEach(([x,w,t])=>{
+      s2.addShape(pptx.shapes.RECTANGLE,{x,y:startY,w,h:hH,fill:{color:NAVY},line:{color:'2e3660',width:0.5}});
+      s2.addText(t,{x,y:startY,w,h:hH,fontSize:11,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
     });
-    // 차주
-    s2.addShape(pptx.shapes.RECTANGLE,{x:7.0,y:1.05,w:5.8,h:.48,fill:{color:'EEF2FF'},line:{color:'C7D2FE',width:.5}});
-    s2.addShape(pptx.shapes.OVAL,{x:7.12,y:1.14,w:.3,h:.3,fill:{color:BLUE},line:{type:'none'}});
-    s2.addText('N',{x:7.12,y:1.14,w:.3,h:.3,fontSize:8,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-    s2.addText('차주 업무',{x:7.55,y:1.05,w:4.9,h:.48,fontSize:14,fontFace:'Pretendard',bold:true,color:NAVY,valign:'middle'});
-    nextItems.forEach((txt,i)=>{
-      s2.addShape(pptx.shapes.OVAL,{x:7.15,y:1.75+i*.52,w:.1,h:.1,fill:{color:NAVY},line:{type:'none'}});
-      s2.addText(txt,{x:7.38,y:1.68+i*.52,w:5.1,h:.44,fontSize:11,fontFace:'Pretendard',color:DKTXT});
+    tl.forEach((t,ri)=>{
+      const rowY=startY+hH+ri*rH,bg=ri%2===0?WHITE:LTGREY;
+      const pn=Math.min(100,Math.max(0,parseInt(t.pct)||0)),bW=2.2*pn/100;
+      cols.forEach(([x,w])=>s2.addShape(pptx.shapes.RECTANGLE,{x,y:rowY,w,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:0.5}}));
+      s2.addText(t.cat,{x:0.45,y:rowY,w:1.7,h:rH,fontSize:10,fontFace:'Pretendard',bold:true,color:NAVY,align:'center',valign:'middle'});
+      s2.addText(t.content,{x:2.3,y:rowY,w:5.2,h:rH,fontSize:10,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
+      s2.addShape(pptx.shapes.RECTANGLE,{x:7.82,y:rowY+0.10,w:2.28,h:rH-0.20,fill:{color:'E8EDF5'},line:{type:'none'}});
+      if(bW>0)s2.addShape(pptx.shapes.RECTANGLE,{x:7.82,y:rowY+0.10,w:bW,h:rH-0.20,fill:{color:NAVY},line:{type:'none'}});
+      s2.addText(pn+'%',{x:10.0,y:rowY,w:0.5,h:rH,fontSize:9,fontFace:'Pretendard',bold:true,color:NAVY,valign:'middle',align:'right'});
+      s2.addText(t.status,{x:10.4,y:rowY,w:2.5,h:rH,fontSize:11,fontFace:'Pretendard',bold:true,color:stC[t.status]||DKTXT,align:'center',valign:'middle'});
     });
 
-    // ── 슬라이드 3: 금주 완료 업무 ──
-    if(isOn('done')){
-      const s3=cS('금주 완료 업무');
-      (doneList.length?doneList:['완료 업무를 입력해주세요']).forEach((txt,i)=>{
-        const y=1.1+i*.82;
-        s3.addShape(pptx.shapes.RECTANGLE,{x:.5,y:y,w:.38,h:.38,fill:{color:NAVY},line:{type:'none'}});
-        s3.addText(String(i+1),{x:.5,y:y,w:.38,h:.38,fontSize:13,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-        s3.addText(txt,{x:1.05,y:y-.02,w:11.7,h:.42,fontSize:13,fontFace:'Pretendard',bold:true,color:BLUE,valign:'middle'});
-        s3.addShape(pptx.shapes.RECTANGLE,{x:.5,y:y+.45,w:12.3,h:.015,fill:{color:'E2E8F0'},line:{type:'none'}});
-      });
+    // ── 슬라이드 3: 주간 일정 현황 ──
+    const s3=cS('주간 일정 현황');
+    let cy3=1.15;
+    const secH=0.38,rowH3=0.48;
+    // 이번 주
+    s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:12.4,h:secH,fill:{color:NAVY},line:{type:'none'}});
+    s3.addText('이번 주 일정',{x:0.60,y:cy3,w:12.1,h:secH,fontSize:12,fontFace:'Pretendard',bold:true,color:WHITE,valign:'middle'});
+    cy3+=secH;
+    (thisS.length?thisS:['입력된 내용 없음']).forEach((txt,i)=>{
+      const bg=i%2===0?WHITE:LTGREY;
+      s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:12.4,h:rowH3,fill:{color:bg},line:{color:'E2E8F0',width:0.5}});
+      s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:0.05,h:rowH3,fill:{color:'3A6BA8'},line:{type:'none'}});
+      s3.addText(txt,{x:0.62,y:cy3,w:12.1,h:rowH3,fontSize:11,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
+      cy3+=rowH3;
+    });
+    cy3+=0.14;
+    // 다음 주
+    s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:12.4,h:secH,fill:{color:'2D4D8A'},line:{type:'none'}});
+    s3.addText('다음 주 일정',{x:0.60,y:cy3,w:12.1,h:secH,fontSize:12,fontFace:'Pretendard',bold:true,color:WHITE,valign:'middle'});
+    cy3+=secH;
+    (nextS.length?nextS:['입력된 내용 없음']).forEach((txt,i)=>{
+      const bg=i%2===0?WHITE:LTGREY;
+      s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:12.4,h:rowH3,fill:{color:bg},line:{color:'E2E8F0',width:0.5}});
+      s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:0.05,h:rowH3,fill:{color:'5B88C0'},line:{type:'none'}});
+      s3.addText(txt,{x:0.62,y:cy3,w:12.1,h:rowH3,fontSize:11,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
+      cy3+=rowH3;
+    });
+    // 휴가 현황
+    if(vacThis.length||vacNext.length){
+      cy3+=0.12;
+      s3.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:cy3,w:12.4,h:0.40,fill:{color:'FFFBF0'},line:{color:'FDE68A',width:0.5}});
+      s3.addText('✈ 휴가현황   이번주: '+(vacThis.join(', ')||'없음')+'   |   다음주: '+(vacNext.join(', ')||'없음'),{x:0.62,y:cy3,w:12.0,h:0.40,fontSize:10,fontFace:'Pretendard',color:'92400E',valign:'middle'});
     }
 
-    // ── 슬라이드 4: 차주 진행 업무 ──
-    if(isOn('task')){
-      const s4=cS('차주 진행 업무');
-      const tl=tasks.length?tasks:[{cat:'(없음)',content:'업무 없음',pct:'0',status:'예정'}];
-      const rH=.58,startY=1.05,hH=.38;
-      [[.5,1.8,'구분'],[2.4,5.0,'업무 내용'],[7.5,2.8,'진척률'],[10.4,2.4,'상태']].forEach(([x,w,t])=>{
-        s4.addShape(pptx.shapes.RECTANGLE,{x,y:startY,w,h:hH,fill:{color:NAVY},line:{color:'2e3660',width:.5}});
-        s4.addText(t,{x,y:startY,w,h:hH,fontSize:12,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-      });
-      tl.forEach((t,ri)=>{
-        const rowY=startY+hH+ri*rH,bg=ri%2===0?WHITE:LTGREY;
-        const pn=Math.min(100,Math.max(0,parseInt(t.pct)||0)),bW=2.6*pn/100;
-        s4.addShape(pptx.shapes.RECTANGLE,{x:.5,y:rowY,w:1.8,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s4.addShape(pptx.shapes.RECTANGLE,{x:2.4,y:rowY,w:5.0,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s4.addShape(pptx.shapes.RECTANGLE,{x:7.5,y:rowY,w:2.8,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s4.addShape(pptx.shapes.RECTANGLE,{x:10.4,y:rowY,w:2.4,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s4.addText(t.cat,{x:.5,y:rowY,w:1.8,h:rH,fontSize:10,fontFace:'Pretendard',bold:true,color:NAVY,align:'center',valign:'middle'});
-        s4.addText(t.content,{x:2.52,y:rowY,w:4.8,h:rH,fontSize:10,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
-        s4.addShape(pptx.shapes.RECTANGLE,{x:7.62,y:rowY+.14,w:2.6,h:rH-.28,fill:{color:'E8EDF5'},line:{type:'none'}});
-        if(bW>0)s4.addShape(pptx.shapes.RECTANGLE,{x:7.62,y:rowY+.14,w:bW,h:rH-.28,fill:{color:NAVY},line:{type:'none'}});
-        s4.addText(pn+'%',{x:10.18,y:rowY,w:.45,h:rH,fontSize:9,fontFace:'Pretendard',bold:true,color:NAVY,valign:'middle',align:'right'});
-        s4.addText(t.status,{x:10.4,y:rowY,w:2.4,h:rH,fontSize:11,fontFace:'Pretendard',bold:true,color:stC[t.status]||DKTXT,align:'center',valign:'middle'});
-      });
-    }
+    // ── 슬라이드 4: 이슈 및 요청 사항 ──
+    const s4=cS('이슈 및 요청 사항');
+    const issueLines=(issueText||'해당 없음').split('\n').map(l=>l.trim()).filter(Boolean);
+    const reqLines=(reqText||'해당 없음').split('\n').map(l=>l.trim()).filter(Boolean);
+    // 이슈/리스크 (왼쪽)
+    s4.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:1.15,w:5.9,h:0.38,fill:{color:NAVY},line:{type:'none'}});
+    s4.addText('이슈 / 리스크',{x:0.58,y:1.15,w:5.6,h:0.38,fontSize:12,fontFace:'Pretendard',bold:true,color:WHITE,valign:'middle'});
+    issueLines.forEach((line,i)=>{
+      const y=1.62+i*0.50;
+      s4.addShape(pptx.shapes.RECTANGLE,{x:0.45,y,w:5.9,h:0.46,fill:{color:i%2===0?WHITE:LTGREY},line:{color:'E2E8F0',width:0.5}});
+      s4.addShape(pptx.shapes.OVAL,{x:0.60,y:y+0.17,w:0.12,h:0.12,fill:{color:NAVY},line:{type:'none'}});
+      s4.addText(line,{x:0.85,y,w:5.3,h:0.46,fontSize:10,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
+    });
+    // 요청/지원 (오른쪽)
+    s4.addShape(pptx.shapes.RECTANGLE,{x:7.0,y:1.15,w:5.9,h:0.38,fill:{color:'2D5986'},line:{type:'none'}});
+    s4.addText('요청 / 지원 사항',{x:7.13,y:1.15,w:5.6,h:0.38,fontSize:12,fontFace:'Pretendard',bold:true,color:WHITE,valign:'middle'});
+    reqLines.forEach((line,i)=>{
+      const y=1.62+i*0.50;
+      s4.addShape(pptx.shapes.RECTANGLE,{x:7.0,y,w:5.9,h:0.46,fill:{color:i%2===0?WHITE:LTGREY},line:{color:'E2E8F0',width:0.5}});
+      s4.addShape(pptx.shapes.OVAL,{x:7.15,y:y+0.17,w:0.12,h:0.12,fill:{color:'2D5986'},line:{type:'none'}});
+      s4.addText(line,{x:7.40,y,w:5.3,h:0.46,fontSize:10,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
+    });
 
-    // ── 슬라이드 5: 주요 일정표 ──
-    if(isOn('sched')){
-      const s5=cS('주요 일정표');
-      const rows=[...thisS.map(t=>({wk:'금주',txt:t})),...nextS.map(t=>({wk:'차주',txt:t}))];
-      if(!rows.length)rows.push({wk:'-',txt:'입력된 일정 없음'});
-      const rH=.5,startY=1.05,hH=.4;
-      [[.5,.7,'일자'],[1.3,1.4,'구분'],[2.8,7.2,'업무 내용'],[10.1,2.7,'비고/참석자']].forEach(([x,w,t])=>{
-        s5.addShape(pptx.shapes.RECTANGLE,{x,y:startY,w,h:hH,fill:{color:NAVY},line:{color:'2e3660',width:.5}});
-        s5.addText(t,{x,y:startY,w,h:hH,fontSize:11,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-      });
-      rows.forEach((r,ri)=>{
-        const rowY=startY+hH+ri*rH,bg=ri%2===0?WHITE:LTGREY;
-        s5.addShape(pptx.shapes.RECTANGLE,{x:.5,y:rowY,w:.7,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s5.addShape(pptx.shapes.RECTANGLE,{x:1.3,y:rowY,w:1.4,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s5.addShape(pptx.shapes.RECTANGLE,{x:2.8,y:rowY,w:7.2,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s5.addShape(pptx.shapes.RECTANGLE,{x:10.1,y:rowY,w:2.7,h:rH,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        s5.addText(r.wk,{x:.5,y:rowY,w:.7,h:rH,fontSize:10,fontFace:'Pretendard',color:NAVY,align:'center',valign:'middle'});
-        s5.addShape(pptx.shapes.RECTANGLE,{x:1.38,y:rowY+.09,w:1.24,h:rH-.18,fill:{color:NAVY},line:{type:'none'}});
-        s5.addText('진행',{x:1.38,y:rowY+.09,w:1.24,h:rH-.18,fontSize:9,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-        s5.addText(r.txt,{x:2.92,y:rowY,w:7.0,h:rH,fontSize:11,fontFace:'Pretendard',color:DKTXT,valign:'middle'});
-        s5.addText('-',{x:10.1,y:rowY,w:2.7,h:rH,fontSize:10,fontFace:'Pretendard',color:'9CA3AF',align:'center',valign:'middle'});
-      });
-      // 휴가 현황
-      if(vacThis.length||vacNext.length){
-        const vY=startY+hH+rows.length*rH+.2;
-        s5.addShape(pptx.shapes.RECTANGLE,{x:.5,y:vY,w:12.3,h:.36,fill:{color:'FFFBF0'},line:{color:'FDE68A',width:.5}});
-        s5.addText('휴가  이번주: '+(vacThis.join(', ')||'없음')+'   다음주: '+(vacNext.join(', ')||'없음'),{x:.65,y:vY,w:12,h:.36,fontSize:10,fontFace:'Pretendard',color:'92400E',valign:'middle'});
-      }
-    }
-
-    // ── 슬라이드 6: 이슈 및 리스크 ──
-    if(isOn('issue')){
-      const s6=cS('이슈 및 리스크');
-      const lines=issueText.split('\n').map(l=>l.trim()).filter(Boolean);
-      const blocks=[];let cur=null;
-      lines.forEach(l=>{
-        if(l.match(/^\[|^[0-9]+\./)){if(cur)blocks.push(cur);cur={title:l,body:[]};}
-        else if(cur){cur.body.push(l);}
-        else{if(!cur){cur={title:'',body:[]};} cur.body.push(l);}
-      });
-      if(cur)blocks.push(cur);
-      if(!blocks.length)blocks.push({title:'이슈 없음',body:['현재 이슈 및 리스크가 없습니다.']});
-      let cy=1.05;
-      blocks.forEach((b,i)=>{
-        const bH=.45+(b.body.length*.38);
-        s6.addShape(pptx.shapes.RECTANGLE,{x:.5,y:cy,w:12.3,h:bH,fill:{color:LTGREY},line:{color:'E2E8F0',width:.5}});
-        s6.addShape(pptx.shapes.RECTANGLE,{x:.5,y:cy,w:.06,h:bH,fill:{color:NAVY},line:{type:'none'}});
-        if(b.title){
-          s6.addShape(pptx.shapes.OVAL,{x:.72,y:cy+.09,w:.26,h:.26,fill:{color:NAVY},line:{type:'none'}});
-          s6.addText(String(i+1),{x:.72,y:cy+.09,w:.26,h:.26,fontSize:9,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});
-          s6.addText(b.title,{x:1.15,y:cy+.04,w:11.4,h:.36,fontSize:12,fontFace:'Pretendard',bold:true,color:NAVY,valign:'middle'});
-        }
-        b.body.forEach((line,li)=>{
-          s6.addText(line,{x:1.15,y:cy+.46+li*.38,w:11.4,h:.35,fontSize:11,fontFace:'Pretendard',color:'444444'});
-        });
-        cy+=bH+.15;
+    // ── 교육 Q&A 슬라이드 (선택) ──
+    if(isOn('qa')&&qas.length){
+      const sq=cS('교육 질의 목록');
+      const qc=[{x:0.45,w:1.7,t:'교육명'},{x:2.2,w:4.85,t:'질문'},{x:7.1,w:5.7,t:'답변'}];
+      qc.forEach(c=>{sq.addShape(pptx.shapes.RECTANGLE,{x:c.x,y:1.12,w:c.w,h:0.38,fill:{color:NAVY},line:{color:'2e3660',width:0.5}});sq.addText(c.t,{x:c.x,y:1.12,w:c.w,h:0.38,fontSize:11,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});});
+      const rH2=Math.min(0.8,5.0/qas.length);
+      qas.forEach((qa,ri)=>{
+        const rY=1.54+ri*rH2,bg=ri%2===0?WHITE:LTGREY;
+        sq.addShape(pptx.shapes.RECTANGLE,{x:0.45,y:rY,w:1.7,h:rH2,fill:{color:'EEF4FF'},line:{color:'D0D9F0',width:0.5}});
+        if(!(ri>0&&qas[ri-1].edu===qa.edu))sq.addText(qa.edu,{x:0.45,y:rY,w:1.7,h:rH2,fontSize:10,fontFace:'Pretendard',bold:true,color:'1E3A8A',align:'center',valign:'middle'});
+        sq.addShape(pptx.shapes.RECTANGLE,{x:2.2,y:rY,w:4.85,h:rH2,fill:{color:bg},line:{color:'E2E8F0',width:0.5}});
+        sq.addShape(pptx.shapes.RECTANGLE,{x:2.2,y:rY,w:0.05,h:rH2,fill:{color:NAVY},line:{type:'none'}});
+        sq.addText(qa.q||'-',{x:2.35,y:rY,w:4.6,h:rH2,fontSize:11,fontFace:'Pretendard',color:NAVY,valign:'middle'});
+        sq.addShape(pptx.shapes.RECTANGLE,{x:7.1,y:rY,w:5.7,h:rH2,fill:{color:'FFFBF5'},line:{color:'E2E8F0',width:0.5}});
+        sq.addShape(pptx.shapes.RECTANGLE,{x:7.1,y:rY,w:0.05,h:rH2,fill:{color:GOLD},line:{type:'none'}});
+        sq.addText(qa.a||'-',{x:7.25,y:rY,w:5.45,h:rH2,fontSize:11,fontFace:'Pretendard',color:'444444',valign:'middle'});
       });
     }
 
     // ── 마지막 슬라이드 ──
     const sEnd=pptx.addSlide();
     sEnd.addImage({data:PPT_BG_END,x:0,y:0,w:13.33,h:7.5,sizing:{type:'cover',w:13.33,h:7.5}});
-    sEnd.addImage({data:PPT_LOGO_BIG,x:10.2,y:.25,w:2.9,h:.85});
-    sEnd.addShape(pptx.shapes.RECTANGLE,{x:4.5,y:3.1,w:4.33,h:.07,fill:{color:GOLD},line:{type:'none'}});
-    sEnd.addText('End of Doc.',{x:2,y:2.5,w:9.33,h:1.0,fontSize:38,fontFace:'Pretendard',bold:true,color:NAVY,align:'center'});
-    sEnd.addText('(주)비아이매트릭스  |  www.bimatrix.co.kr  |  02-561-4475',{x:1,y:6.8,w:11.3,h:.32,fontSize:10,fontFace:'Pretendard',color:'666666',align:'center'});
+    sEnd.addImage({data:PPT_LOGO_BIG,x:11.28,y:0.415,w:1.33,h:0.33});
+    sEnd.addText('End of Doc.',{x:3.0,y:3.0,w:7.0,h:1.2,fontSize:38,fontFace:'Arial Black',bold:true,color:'3D3D3D',align:'center'});
+    sEnd.addText('(주)비아이매트릭스  |  www.bimatrix.co.kr  |  서울시 강남구 선릉로 433  |  02-561-4475',{x:1.0,y:7.0,w:11.3,h:0.35,fontSize:11,fontFace:'Pretendard',color:'888888',align:'center'});
 
-    if(isOn('qa')&&qas.length){
-      const sq=cS('교육 질의 목록');
-      const qc=[{x:.5,w:1.7,t:'교육명'},{x:2.25,w:4.85,t:'질문'},{x:7.15,w:5.68,t:'답변'}];
-      qc.forEach(c=>{sq.addShape(pptx.shapes.RECTANGLE,{x:c.x,y:.95,w:c.w,h:.38,fill:{color:NAVY},line:{color:'2e3660',width:.5}});sq.addText(c.t,{x:c.x,y:.95,w:c.w,h:.38,fontSize:11,fontFace:'Pretendard',bold:true,color:WHITE,align:'center',valign:'middle'});});
-      const rH2=Math.min(.8,5.4/qas.length);
-      qas.forEach((qa,ri)=>{
-        const rY=1.34+ri*rH2,bg=ri%2===0?WHITE:LTGREY;
-        sq.addShape(pptx.shapes.RECTANGLE,{x:.5,y:rY,w:1.7,h:rH2,fill:{color:'EEF4FF'},line:{color:'D0D9F0',width:.5}});
-        if(!(ri>0&&qas[ri-1].edu===qa.edu))sq.addText(qa.edu,{x:.5,y:rY,w:1.7,h:rH2,fontSize:10,fontFace:'Pretendard',bold:true,color:'1E3A8A',align:'center',valign:'middle'});
-        sq.addShape(pptx.shapes.RECTANGLE,{x:2.25,y:rY,w:4.85,h:rH2,fill:{color:bg},line:{color:'E2E8F0',width:.5}});
-        sq.addShape(pptx.shapes.RECTANGLE,{x:2.25,y:rY,w:.05,h:rH2,fill:{color:NAVY},line:{type:'none'}});
-        sq.addText(qa.q||'-',{x:2.4,y:rY,w:4.6,h:rH2,fontSize:11,fontFace:'Pretendard',color:NAVY,valign:'middle'});
-        sq.addShape(pptx.shapes.RECTANGLE,{x:7.15,y:rY,w:5.68,h:rH2,fill:{color:'FFFBF5'},line:{color:'E2E8F0',width:.5}});
-        sq.addShape(pptx.shapes.RECTANGLE,{x:7.15,y:rY,w:.05,h:rH2,fill:{color:GOLD},line:{type:'none'}});
-        sq.addText(qa.a||'-',{x:7.3,y:rY,w:5.44,h:rH2,fontSize:11,fontFace:'Pretendard',color:'444444',valign:'middle'});
-      });
-    }
-
-    await pptx.writeFile({fileName:'주간보고_'+wk.title.replace(/\s/g,'_')+'.pptx'});
-    showRStatus('PPT가 생성되었습니다!','ok');
+    const fname=team.replace(/\s/g,'')+'_'+author.split(' ')[0]+'_'+fileDate+'.pptx';
+    await pptx.writeFile({fileName:fname});
+    showRStatus('PPT가 생성되었습니다! ('+fname+')','ok');
   }catch(e){showRStatus('오류: '+e.message,'err');console.error(e);}
   finally{btn.disabled=false;spin.style.display='none';lbl.textContent='PPT 생성 · 다운로드';}
 }
@@ -1508,10 +1548,25 @@ document.addEventListener('keydown',function(e){
   document.getElementById('wlabel').textContent=info.title;
   document.getElementById('rdate').value=info.date;
   addRTask();addRTask();
-  addSched('this');addSched('this');
-  addSched('next');addSched('next');
   renderHome();
   initColResize();
+  // 클라우드에서 최신 데이터 로드
+  setSyncStatus('loading');
+  cloudLoad().then(updated=>{
+    setSyncStatus('ok');
+    if(updated)renderHome();
+  }).catch(()=>setSyncStatus('error'));
+  // 실시간 동기화 구독 (다른 사람이 변경하면 자동 반영)
+  _sb.channel('app_state_rt')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_state'},
+      payload=>{
+        if(payload.new&&payload.new.data){
+          localStorage.setItem(PLAN_KEY,JSON.stringify(payload.new.data));
+          renderHome();
+          setSyncStatus('ok');
+        }
+      })
+    .subscribe();
 })();
 
 function initColResize(){
