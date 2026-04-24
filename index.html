@@ -1554,7 +1554,16 @@ document.addEventListener('keydown',function(e){
   setSyncStatus('loading');
   cloudLoad().then(updated=>{
     setSyncStatus('ok');
-    if(updated)renderHome();
+    if(updated){
+      renderHome();
+    } else {
+      // 클라우드가 비어있으면 로컬 데이터를 클라우드에 업로드
+      const local=loadData();
+      if(Object.keys(local.plans||{}).length>0){
+        setSyncStatus('saving');
+        cloudSave(local);
+      }
+    }
   }).catch(()=>setSyncStatus('error'));
   // 실시간 동기화 구독 (다른 사람이 변경하면 자동 반영)
   _sb.channel('app_state_rt')
