@@ -685,7 +685,7 @@ function renderHome(){
   if(!plan.kpis||!plan.kpis.length){kg.innerHTML='';ke.style.display='block';}
   else{ke.style.display='none';kg.innerHTML=plan.kpis.map(k=>{
     const pct=k.target?Math.min(100,Math.round((k.current||0)/k.target*100)):0;
-    return'<div class="kpi-card"><div class="kpi-label">'+k.title+'</div><div class="kpi-num">'+(k.current||0)+'<span>/ '+k.target+(k.unit||'')+'</span></div><div class="kpi-track"><div class="kpi-fill" style="width:'+pct+'%"></div></div><div class="kpi-pct">'+pct+'% 달성</div></div>';
+    return'<div class="kpi-card"><div class="kpi-label">'+k.title+'</div><div class="kpi-num">'+(k.current||0)+'<span>/ '+k.target+'</span></div><div class="kpi-track"><div class="kpi-fill" style="width:'+pct+'%"></div></div><div class="kpi-pct">'+pct+'% 달성</div></div>';
   }).join('');}
   const grid=document.getElementById('memberGrid');grid.innerHTML='';
   MEMBERS.forEach((name,i)=>{
