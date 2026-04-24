@@ -315,9 +315,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
         </div>
         <select id="fStatus" onchange="renderTaskTable()"><option value="">전체 상태</option><option>완료</option><option>진행중</option><option>백로그</option></select>
         <select id="fCat" onchange="renderTaskTable()"><option value="">전체 카테고리</option></select>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--sub);cursor:pointer;user-select:none;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--sub);cursor:pointer;user-select:none;margin-left:4px;">
           <input type="checkbox" id="showPastTasks" onchange="renderTaskTable()" style="cursor:pointer;accent-color:var(--sb-acc);">
           <span>과거 업무 포함</span>
         </label>
