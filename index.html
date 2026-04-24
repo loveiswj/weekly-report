@@ -271,8 +271,9 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
       <div id="kpiGrid" class="kpi-grid"></div>
       <div id="kpiEmpty" class="empty" style="display:none;">업무관리 탭에서 KPI를 설정하세요</div>
     </div>
-    <div style="font-size:.75rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">팀원 현황 <small style="text-transform:none;font-weight:400;color:var(--hint);">· 클릭하면 오늘 할일 확인</small></div>
+    <div style="font-size:.75rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">팀원 현황 <small style="text-transform:none;font-weight:400;color:var(--hint);">· 클릭하면 업무 확인</small></div>
     <div class="member-grid" id="memberGrid"></div>
+    <div id="memberDetail" style="display:none;margin-top:10px;"></div>
   </div>
 </div>
 
@@ -782,9 +783,71 @@ function renderHome(){
       '<div class="mc-bar-wrap"><div class="mc-bar-fill" style="width:'+pct+'%"></div></div>'+
       '<div class="mc-bar-lbl"><span>이번달 완료율</span><span>'+doneT.length+'/'+tasks.length+' ('+pct+'%)</span></div>'+
       (todayT.length?'<div class="task-chips">'+todayT.slice(0,3).map(t=>'<div class="chip today">'+t.title+'</div>').join('')+'</div>':'');
-    div.onclick=()=>openMemberModal(name,ts);
+    div.dataset.member=name;
+    div.onclick=()=>toggleMemberDetail(name,ts);
     grid.appendChild(div);
   });
+}
+
+let _selectedMember='';
+function toggleMemberDetail(name,ts){
+  const detail=document.getElementById('memberDetail');
+  const cards=document.querySelectorAll('#memberGrid .mc');
+  if(_selectedMember===name){
+    _selectedMember='';
+    detail.style.display='none';
+    cards.forEach(c=>c.style.boxShadow='');
+    return;
+  }
+  _selectedMember=name;
+  cards.forEach(c=>{
+    const isMe=c.dataset.member===name;
+    c.style.boxShadow=isMe?'0 0 0 2px var(--sb-acc)':'';
+  });
+
+  const key=mkKey(new Date().getFullYear(),new Date().getMonth());
+  const plan=getPlan(key);
+  const tasks=(plan.tasks||[]).filter(t=>t.assignees&&t.assignees.includes(name));
+  const doing=tasks.filter(t=>t.status==='진행중');
+  const backlog=tasks.filter(t=>t.status==='백로그');
+  const done=tasks.filter(t=>t.status==='완료');
+
+  const mi=MEMBERS.indexOf(name);
+  const color=M_COLORS[mi]||'#888';
+
+  function taskRow(t){
+    const cc=CAT_COLORS[t.category]||'#aaa';
+    return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #F0F2F8;">'+
+      '<input type="checkbox" style="accent-color:var(--sb-acc);cursor:pointer;flex-shrink:0;" '+(t.status==='완료'?'checked':'')+' onchange="toggleDone(\''+t.id+'\',\''+key+'\',this)">'+
+      '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+cc+';flex-shrink:0;"></span>'+
+      '<span style="flex:1;font-size:.8rem;'+(t.status==='완료'?'text-decoration:line-through;color:var(--hint);':t.status==='진행중'?'font-weight:600;':'')+'">'+esc(t.title)+'</span>'+
+      '<span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span>'+
+      (t.pct?'<span style="font-size:.69rem;color:var(--sub);min-width:30px;">'+t.pct+'%</span>':'')+
+      (t.endDate?'<span style="font-size:.67rem;color:var(--hint);min-width:36px;">~'+t.endDate.slice(5)+'</span>':'')+
+    '</div>';
+  }
+
+  function section(label,color,list){
+    if(!list.length)return'';
+    return'<div>'+
+      '<div style="font-size:.67rem;font-weight:700;color:'+color+';padding:8px 12px 4px;letter-spacing:.04em;">'+label+' ('+list.length+')</div>'+
+      list.map(taskRow).join('')+
+    '</div>';
+  }
+
+  detail.style.display='block';
+  detail.innerHTML='<div class="card" style="margin-bottom:0;">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);">'+
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#fff;">'+name[0]+'</div>'+
+      '<span style="font-size:.88rem;font-weight:700;">'+name+'</span>'+
+      '<span style="font-size:.72rem;color:var(--sub);margin-left:auto;">이번달 '+tasks.length+'건 · 완료 '+done.length+'건</span>'+
+    '</div>'+
+    (!tasks.length?'<div class="empty">이번달 배정된 업무가 없습니다.</div>':
+      section('진행중','#3A5499',doing)+
+      section('백로그','#6B7280',backlog)+
+      section('완료','#3A6E50',done)
+    )+
+  '</div>';
 }
 
 function isToday(task,ts){
