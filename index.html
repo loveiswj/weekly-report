@@ -102,7 +102,7 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:#999;}
 .f textarea{resize:vertical;min-height:58px;line-height:1.5;}
 .row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
-.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
 .filter-bar select{padding:5px 9px;border:1px solid var(--border);border-radius:8px;font-size:.76rem;font-family:inherit;background:#fff;color:var(--text);}
 /* 모달 */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:1rem;}
@@ -186,6 +186,11 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 /* TO DO */
 .postit-card{background:#FDFCF4;border:1px solid #E8E4CC;border-radius:10px;padding:.75rem 1rem;box-shadow:1px 2px 6px rgba(0,0,0,.06);position:relative;}
 .postit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:#D4C870;border-radius:10px 10px 0 0;}
+.postit-card.onsite{background:#F4FAFB;border-color:#C4DCE4;}
+.postit-card.onsite::before{background:#4A8898;}
+.postit-card.onsite .todo-item{border-bottom-color:#C8DDE4;}
+.postit-card.onsite .todo-text{color:#1A3A42;}
+.postit-card.onsite .todo-item.done .todo-text{color:#4A8898;}
 .todo-item{display:flex;align-items:center;gap:7px;padding:5px 7px;border-bottom:1px solid #EEEACC;margin-bottom:0;background:none;transition:background .15s;}
 .todo-item:last-child{border-bottom:none;}
 .todo-item:hover{background:rgba(255,255,255,.7);}
@@ -265,18 +270,33 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
         </div>
         <div id="kpiList"></div>
       </div>
-      <div class="postit-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
-          <span style="font-size:.72rem;font-weight:600;color:#706840;letter-spacing:.02em;">해야 할 일</span>
-          <span style="font-size:.63rem;color:#A09840;" id="todoStats"></span>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="postit-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
+            <span style="font-size:.72rem;font-weight:600;color:#706840;letter-spacing:.02em;">해야 할 일</span>
+            <span style="font-size:.63rem;color:#A09840;" id="todoStats"></span>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <input type="text" id="todoInput" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo('g')"
+              style="flex:1;padding:5px 8px;border:1px solid #E0DAB8;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#3A3210;">
+            <button class="btn btn-sm" onclick="addTodo('g')" style="background:#E8E0A0;border:none;color:#4A4010;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
+          </div>
+          <div id="todoList"></div>
+          <div id="todoEmpty" class="empty" style="display:none;padding:.5rem;color:#B0A850;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
         </div>
-        <div style="display:flex;gap:6px;margin-bottom:8px;">
-          <input type="text" id="todoInput" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo()"
-            style="flex:1;padding:5px 8px;border:1px solid #E0DAB8;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#3A3210;">
-          <button class="btn btn-sm" onclick="addTodo()" style="background:#E8E0A0;border:none;color:#4A4010;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
+        <div class="postit-card onsite">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
+            <span style="font-size:.72rem;font-weight:600;color:#2A5868;letter-spacing:.02em;">온사이트 교육</span>
+            <span style="font-size:.63rem;color:#4A8898;" id="todo2Stats"></span>
+          </div>
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <input type="text" id="todo2Input" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo('o')"
+              style="flex:1;padding:5px 8px;border:1px solid #B4D0DC;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#1A3A42;">
+            <button class="btn btn-sm" onclick="addTodo('o')" style="background:#A0C8D4;border:none;color:#1A3A42;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
+          </div>
+          <div id="todo2List"></div>
+          <div id="todo2Empty" class="empty" style="display:none;padding:.5rem;color:#4A8898;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
         </div>
-        <div id="todoList"></div>
-        <div id="todoEmpty" class="empty" style="display:none;padding:.5rem;color:#B0A850;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
       </div>
     </div>
     <div class="card">
@@ -285,9 +305,19 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
         <button class="btn btn-p btn-sm" onclick="openAddTask()">+ 업무 추가</button>
       </div>
       <div class="filter-bar">
-        <select id="fAssignee" onchange="renderTaskTable()"><option value="">전체 담당자</option></select>
+        <div style="display:flex;gap:6px;align-items:center;margin-right:12px;">
+          <span style="font-size:.72rem;color:var(--sub);font-weight:600;">담당자:</span>
+          <button class="assignee-filter-btn active" data-assignee="" onclick="filterByAssignee(event)" style="width:32px;height:32px;border-radius:50%;background:#E5E7EB;color:#666;font-size:.65rem;font-weight:700;border:1px solid #D1D5DB;cursor:pointer;transition:all .15s;">전체</button>
+          <div id="assigneeFilterIcons" style="display:flex;gap:6px;"></div>
+        </div>
         <select id="fStatus" onchange="renderTaskTable()"><option value="">전체 상태</option><option>완료</option><option>진행중</option><option>백로그</option></select>
         <select id="fCat" onchange="renderTaskTable()"><option value="">전체 카테고리</option></select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--sub);cursor:pointer;user-select:none;">
+          <input type="checkbox" id="showPastTasks" onchange="renderTaskTable()" style="cursor:pointer;accent-color:var(--sb-acc);">
+          <span>과거 업무 포함</span>
+        </label>
       </div>
       <div style="overflow-x:auto;">
         <table class="t-table" style="table-layout:fixed;">
@@ -546,6 +576,7 @@ const M_COLORS=['#6B84B8','#5A9080','#8878B0','#B08060'];
 const CATS=['교육','온사이트 교육','그룹장님 지시업무','주요 업무','커뮤니티','기타'];
 const CAT_COLORS={교육:'#5A78B0','온사이트 교육':'#4A8898','그룹장님 지시업무':'#7B6AA8','주요 업무':'#4A8870',커뮤니티:'#9A7850',기타:'#7A8898'};
 const PLAN_KEY='bm_plan_v3';
+let currentAssigneeFilter='';
 
 /* ── Supabase 클라우드 동기화 ── */
 const SB_URL='https://qfzwsthshflndwwjsikp.supabase.co';
@@ -587,7 +618,7 @@ function saveData(d){
   if(btn){btn.disabled=false;btn.style.color='rgba(255,255,255,.75)';btn.style.borderColor='rgba(255,255,255,.3)';}
   setSyncStatus('saving');
   clearTimeout(_syncTimer);
-  _syncTimer=setTimeout(()=>cloudSave(d),800);
+  _syncTimer=setTimeout(()=>{_syncTimer=null;cloudSave(d);},800);
 }
 function undoLast(){
   if(!_undoStack.length)return;
@@ -745,8 +776,14 @@ function renderPlan(){
   const key=mkKey(planY,planM);const plan=getPlan(key);
   document.getElementById('planMonthLbl').textContent=mlbl(planY,planM);
   renderKPIList(plan,key);renderTaskTable();renderTodos();
-  const fa=document.getElementById('fAssignee');
-  fa.innerHTML='<option value="">전체 담당자</option>'+MEMBERS.map(m=>'<option>'+m+'</option>').join('');
+  // 담당자 아이콘 버튼 생성
+  const assigneeContainer=document.getElementById('assigneeFilterIcons');
+  assigneeContainer.innerHTML=MEMBERS.map((m,i)=>{
+    const initials=m.split(' ')[0];
+    return'<button class="assignee-filter-btn" data-assignee="'+m+'" onclick="filterByAssignee(event)" '+
+      'style="width:32px;height:32px;border-radius:50%;background:'+M_COLORS[i]+';color:#fff;font-size:.65rem;font-weight:700;border:2px solid transparent;cursor:pointer;transition:all .15s;" '+
+      'title="'+m+'">'+initials.charAt(0)+'</button>';
+  }).join('');
   const fc=document.getElementById('fCat');
   fc.innerHTML='<option value="">전체 카테고리</option>'+CATS.map(c=>'<option>'+c+'</option>').join('');
 }
@@ -776,16 +813,46 @@ function addKPI(){const key=mkKey(planY,planM);const plan=getPlan(key);plan.kpis
 function updKPI(key,id,f,v){const p=getPlan(key);const k=p.kpis.find(x=>x.id===id);if(k){k[f]=v;savePlan(key,p);}}
 function delKPI(key,id){const p=getPlan(key);p.kpis=p.kpis.filter(x=>x.id!==id);savePlan(key,p);renderPlan();}
 
+function filterByAssignee(e){
+  e.preventDefault();
+  const btn=e.currentTarget;
+  const assignee=btn.dataset.assignee||'';
+  currentAssigneeFilter=assignee;
+  // 모든 버튼에서 active 클래스 제거
+  document.querySelectorAll('.assignee-filter-btn').forEach(b=>b.classList.remove('active'));
+  // 클릭된 버튼에 active 클래스 추가 및 스타일 적용
+  btn.classList.add('active');
+  if(assignee===''){
+    btn.style.borderColor='#999';
+  }else{
+    btn.style.borderColor='#000';
+  }
+  renderTaskTable();
+}
+
 function renderTaskTable(){
   const key=mkKey(planY,planM);const plan=getPlan(key);
   const tbody=document.getElementById('taskTbody'),empty=document.getElementById('taskEmpty');
-  const fa=document.getElementById('fAssignee')?.value||'';
+  const fa=currentAssigneeFilter;
   const fs=document.getElementById('fStatus')?.value||'';
   const fc=document.getElementById('fCat')?.value||'';
+  const showPast=document.getElementById('showPastTasks')?.checked||false;
   let tasks=plan.tasks||[];
   if(fa)tasks=tasks.filter(t=>t.assignees&&t.assignees.includes(fa));
   if(fs)tasks=tasks.filter(t=>t.status===fs);
   if(fc)tasks=tasks.filter(t=>t.category===fc);
+  // 과거 업무 필터링: 체크박스 미체크 시 오늘 이후 업무만 표시
+  if(!showPast){
+    const today=toISO(new Date());
+    tasks=tasks.filter(t=>{
+      // 종료일이 오늘 이후인 업무만 표시
+      if(t.endDate)return t.endDate>=today;
+      // 종료일이 없으면 시작일 확인
+      if(t.startDate)return t.startDate>=today;
+      // 날짜 정보가 없으면 표시
+      return true;
+    });
+  }
   if(!tasks.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
   let rows='';
@@ -798,9 +865,9 @@ function renderTaskTable(){
     if(collapsed)return;
     ct.forEach(t=>{
       {
-        const rowStyle=t.status==='완료'?'opacity:.55;':t.status==='진행중'?'background:#EEF3FF;border-left:3px solid var(--sb-acc);':'';
+        const rowStyle=t.status==='완료'?'opacity:.55;':t.status==='진행중'?'background:#EEF3FF;':'';
         rows+='<tr class="task-row" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
-          '<td style="color:var(--hint);font-size:.69rem;">'+no+'</td>'+
+          '<td style="color:var(--hint);font-size:.69rem;border-left:0;">'+no+'</td>'+
           '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
           '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
@@ -887,48 +954,65 @@ function saveTask(){
 function closeTaskModal(e){if(e.target===document.getElementById('taskModal'))closeTaskModalBtn();}
 function closeTaskModalBtn(){document.getElementById('taskModal').classList.remove('open');}
 
-/* TO DO */
+/* TO DO — 클라우드 동기화 없는 로컬 전용 저장소 */
+const TODO_KEY='bm_todos_v1';
+function _loadAllTodos(){try{return JSON.parse(localStorage.getItem(TODO_KEY))||{};}catch{return{};}}
+function _getTodos(skey){return _loadAllTodos()[skey]||[];}
+function _saveTodos(skey,todos){const all=_loadAllTodos();all[skey]=todos;localStorage.setItem(TODO_KEY,JSON.stringify(all));}
+
+const TODO_SECTIONS=[
+  {id:'g',inputId:'todoInput',listId:'todoList',statsId:'todoStats',emptyId:'todoEmpty'},
+  {id:'o',inputId:'todo2Input',listId:'todo2List',statsId:'todo2Stats',emptyId:'todo2Empty'},
+];
+
 function renderTodos(){
-  const key=mkKey(planY,planM);const plan=getPlan(key);
-  const todos=plan.todos||[];
-  const list=document.getElementById('todoList');
-  const empty=document.getElementById('todoEmpty');
-  const stats=document.getElementById('todoStats');
-  if(!todos.length){list.innerHTML='';empty.style.display='block';stats.textContent='';return;}
-  empty.style.display='none';
-  const done=todos.filter(t=>t.done).length;
-  stats.textContent=done+'/'+todos.length+' 완료';
-  list.innerHTML=todos.map(t=>
-    '<div class="todo-item'+(t.done?' done':'')+'" id="td-'+t.id+'">'+
-    '<input type="checkbox" class="todo-chk" '+(t.done?'checked':'')+' onchange="toggleTodo(\''+key+'\',\''+t.id+'\',this)">'+
-    '<span class="todo-text" title="클릭하여 수정" onclick="editTodo(\''+key+'\',\''+t.id+'\',this)">'+esc(t.text)+'</span>'+
-    '<button class="todo-del" onclick="deleteTodo(\''+key+'\',\''+t.id+'\')">✕</button>'+
-    '</div>'
-  ).join('');
+  const key=mkKey(planY,planM);
+  TODO_SECTIONS.forEach(sec=>{
+    const skey=key+':'+sec.id;
+    const todos=_getTodos(skey);
+    const list=document.getElementById(sec.listId);
+    const empty=document.getElementById(sec.emptyId);
+    const stats=document.getElementById(sec.statsId);
+    if(!list)return;
+    if(!todos.length){list.innerHTML='';if(empty)empty.style.display='block';if(stats)stats.textContent='';return;}
+    if(empty)empty.style.display='none';
+    const done=todos.filter(t=>t.done).length;
+    if(stats)stats.textContent=done+'/'+todos.length+' 완료';
+    list.innerHTML=todos.map(t=>
+      '<div class="todo-item'+(t.done?' done':'')+'" id="td-'+t.id+'">'+
+      '<input type="checkbox" class="todo-chk" '+(t.done?'checked':'')+' onchange="toggleTodo(\''+skey+'\',\''+t.id+'\',this)">'+
+      '<span class="todo-text" title="클릭하여 수정" onclick="editTodo(\''+skey+'\',\''+t.id+'\',this)">'+esc(t.text)+'</span>'+
+      '<button class="todo-del" onclick="deleteTodo(\''+skey+'\',\''+t.id+'\')">✕</button>'+
+      '</div>'
+    ).join('');
+  });
 }
-function addTodo(){
-  const inp=document.getElementById('todoInput');
+function addTodo(secId){
+  secId=secId||'g';
+  const sec=TODO_SECTIONS.find(s=>s.id===secId)||TODO_SECTIONS[0];
+  const inp=document.getElementById(sec.inputId);
   const text=inp.value.trim();if(!text)return;
-  const key=mkKey(planY,planM);const plan=getPlan(key);
-  plan.todos.push({id:genId(),text,done:false});
-  savePlan(key,plan);inp.value='';renderTodos();
+  const skey=mkKey(planY,planM)+':'+sec.id;
+  const todos=_getTodos(skey);
+  todos.push({id:genId(),text,done:false});
+  _saveTodos(skey,todos);inp.value='';renderTodos();
 }
-function toggleTodo(key,id,cb){
-  const plan=getPlan(key);const t=plan.todos.find(x=>x.id===id);
-  if(t){t.done=cb.checked;savePlan(key,plan);renderTodos();}
+function toggleTodo(skey,id,cb){
+  const todos=_getTodos(skey);const t=todos.find(x=>x.id===id);
+  if(t){t.done=cb.checked;_saveTodos(skey,todos);renderTodos();}
 }
-function deleteTodo(key,id){
-  const plan=getPlan(key);plan.todos=plan.todos.filter(x=>x.id!==id);
-  savePlan(key,plan);renderTodos();
+function deleteTodo(skey,id){
+  const todos=_getTodos(skey).filter(x=>x.id!==id);
+  _saveTodos(skey,todos);renderTodos();
 }
-function editTodo(key,id,el){
+function editTodo(skey,id,el){
   const inp=document.createElement('input');
   inp.type='text';inp.value=el.textContent;
   inp.style.cssText='flex:1;font-size:.69rem;border:none;outline:1px solid #C8B840;border-radius:3px;padding:1px 5px;font-family:inherit;color:#4A4420;background:#FFFFF0;min-width:0;width:100%;';
   el.replaceWith(inp);inp.focus();inp.select();
   function save(){
     const v=inp.value.trim();
-    if(v){const plan=getPlan(key);const t=plan.todos.find(x=>x.id===id);if(t){t.text=v;savePlan(key,plan);}}
+    if(v){const todos=_getTodos(skey);const t=todos.find(x=>x.id===id);if(t){t.text=v;_saveTodos(skey,todos);}}
     renderTodos();
   }
   inp.onblur=save;
@@ -1570,6 +1654,7 @@ document.addEventListener('keydown',function(e){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_state'},
       payload=>{
         if(payload.new&&payload.new.data){
+          if(_syncTimer!=null){setSyncStatus('ok');return;}
           localStorage.setItem(PLAN_KEY,JSON.stringify(payload.new.data));
           renderHome();
           setSyncStatus('ok');
