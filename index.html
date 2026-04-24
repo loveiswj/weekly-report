@@ -243,6 +243,25 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
   </div>
   <div class="content">
 
+<!-- 카테고리 관리 모달 -->
+<div id="catModal" class="modal-bg" onclick="if(event.target===this)closeCatModal()">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-hd">
+      <span class="modal-title">카테고리 관리</span>
+      <button class="modal-x" onclick="closeCatModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="catList" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;align-items:center;border-top:1px solid var(--border);padding-top:12px;">
+        <input type="color" id="newCatColor" value="#5A78B0" style="width:36px;height:34px;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:2px;">
+        <input type="text" id="newCatName" placeholder="카테고리 이름" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+        <button class="btn btn-p btn-sm" onclick="addCat()">+ 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- 홈 -->
 <div id="page-home" class="tab-page active">
   <div class="wrap">
@@ -315,6 +334,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
         </div>
         <select id="fStatus" onchange="renderTaskTable()"><option value="">전체 상태</option><option>완료</option><option>진행중</option><option>백로그</option></select>
         <select id="fCat" onchange="renderTaskTable()"><option value="">전체 카테고리</option></select>
+        <button onclick="openCatModal()" style="padding:5px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--sub);font-size:.72rem;cursor:pointer;font-family:inherit;">⚙ 카테고리</button>
         <label style="display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--sub);cursor:pointer;user-select:none;margin-left:4px;">
           <input type="checkbox" id="showPastTasks" onchange="renderTaskTable()" style="cursor:pointer;accent-color:var(--sb-acc);">
           <span>과거 업무 포함</span>
@@ -574,8 +594,27 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
 const MEMBERS=['김원정 수석','장민지 선임','제현재 사원','허선희'];
 const MANAGER='김원정 수석';
 const M_COLORS=['#6B84B8','#5A9080','#8878B0','#B08060'];
-const CATS=['교육','온사이트 교육','그룹장님 지시업무','주요 업무','커뮤니티','기타'];
-const CAT_COLORS={교육:'#5A78B0','온사이트 교육':'#4A8898','그룹장님 지시업무':'#7B6AA8','주요 업무':'#4A8870',커뮤니티:'#9A7850',기타:'#7A8898'};
+const M_PHOTOS=['images/kimWonjeong.jpg','images/jangMinji.jpg','images/jeHyeonjae.jpg',null];
+function mAvatar(i,size){
+  const s='width:'+size+'px;height:'+size+'px;border-radius:50%;flex-shrink:0;overflow:hidden;';
+  return M_PHOTOS[i]
+    ?'<div style="'+s+'"><img src="'+M_PHOTOS[i]+'" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+    :'<div style="'+s+'background:'+M_COLORS[i]+';display:flex;align-items:center;justify-content:center;font-size:'+(size*0.4)+'px;font-weight:700;color:#fff;">'+MEMBERS[i][0]+'</div>';
+}
+const CAT_KEY='bm_cats_v1';
+const DEFAULT_CATS=[
+  {name:'교육',color:'#5A78B0'},{name:'온사이트 교육',color:'#4A8898'},
+  {name:'그룹장님 지시업무',color:'#7B6AA8'},{name:'주요 업무',color:'#4A8870'},
+  {name:'커뮤니티',color:'#9A7850'},{name:'기타',color:'#7A8898'}
+];
+const CAT_PALETTE=['#5A78B0','#4A8898','#7B6AA8','#4A8870','#9A7850','#7A8898','#B05A5A','#5A9878','#8898AA','#AA7850','#6B78B0','#50A878'];
+function loadCats(){try{return JSON.parse(localStorage.getItem(CAT_KEY))||DEFAULT_CATS;}catch{return DEFAULT_CATS;}}
+function saveCats(cats){localStorage.setItem(CAT_KEY,JSON.stringify(cats));}
+function getCats(){return loadCats();}
+function getCatColors(){const o={};loadCats().forEach(c=>o[c.name]=c.color);return o;}
+let CATS=getCats().map(c=>c.name);
+let CAT_COLORS=getCatColors();
+function refreshCatVars(){CATS=getCats().map(c=>c.name);CAT_COLORS=getCatColors();}
 const PLAN_KEY='bm_plan_v3';
 let currentAssigneeFilter='';
 
@@ -635,6 +674,52 @@ function undoLast(){
   }
 }
 function mkKey(y,m){return y+'-'+String(m+1).padStart(2,'0');}
+
+/* 카테고리 관리 */
+function openCatModal(){
+  renderCatList();
+  document.getElementById('catModal').classList.add('open');
+}
+function closeCatModal(){
+  document.getElementById('catModal').classList.remove('open');
+  refreshCatVars();
+  const fc=document.getElementById('fCat');
+  if(fc)fc.innerHTML='<option value="">전체 카테고리</option>'+CATS.map(c=>'<option>'+c+'</option>').join('');
+  renderTaskTable();
+}
+function renderCatList(){
+  const cats=loadCats();
+  document.getElementById('catList').innerHTML=cats.map((c,i)=>
+    '<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #F0F0F0;">'+
+    '<input type="color" value="'+c.color+'" onchange="updateCatColor('+i+',this.value)" style="width:28px;height:28px;border:1px solid var(--border);border-radius:5px;cursor:pointer;padding:1px;">'+
+    '<span style="flex:1;font-size:.8rem;font-weight:500;">'+c.name+'</span>'+
+    (cats.length>1?'<button onclick="deleteCat('+i+')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:.82rem;padding:2px 6px;border-radius:4px;" onmouseover="this.style.color=\'#C0392B\'" onmouseout="this.style.color=\'var(--hint)\'">✕</button>':'')+
+    '</div>'
+  ).join('');
+}
+function addCat(){
+  const name=document.getElementById('newCatName').value.trim();
+  const color=document.getElementById('newCatColor').value;
+  if(!name)return;
+  const cats=loadCats();
+  if(cats.find(c=>c.name===name))return alert('이미 있는 카테고리입니다.');
+  cats.push({name,color});
+  saveCats(cats);
+  document.getElementById('newCatName').value='';
+  renderCatList();
+}
+function deleteCat(i){
+  const cats=loadCats();
+  if(cats.length<=1)return;
+  cats.splice(i,1);
+  saveCats(cats);
+  renderCatList();
+}
+function updateCatColor(i,color){
+  const cats=loadCats();
+  cats[i].color=color;
+  saveCats(cats);
+}
 function getPlan(key){const d=loadData();if(!d.plans[key])d.plans[key]={kpis:[],tasks:[],todos:[]};if(!d.plans[key].todos)d.plans[key].todos=[];return d.plans[key];}
 function savePlan(key,plan){const d=loadData();d.plans[key]=plan;saveData(d);}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
@@ -694,7 +779,7 @@ function renderHome(){
     const pct=tasks.length?Math.round(doneT.length/tasks.length*100):0;
     const div=document.createElement('div');div.className='mc';
     div.innerHTML=
-      '<div class="mc-head"><div class="mc-av" style="background:'+color+'">'+name.slice(0,1)+'</div>'+
+      '<div class="mc-head">'+mAvatar(i,36)++
       '<div><div class="mc-name">'+name+'</div><div class="mc-role">'+(name===MANAGER?'팀장':'팀원')+'</div></div></div>'+
       '<div class="mc-stat"><span class="mc-today-lbl">오늘 할일</span><span class="mc-today-cnt">'+todayT.length+'건</span></div>'+
       '<div class="mc-bar-wrap"><div class="mc-bar-fill" style="width:'+pct+'%"></div></div>'+
@@ -782,8 +867,10 @@ function renderPlan(){
   assigneeContainer.innerHTML=MEMBERS.map((m,i)=>{
     const initials=m.split(' ')[0];
     return'<button class="assignee-filter-btn" data-assignee="'+m+'" onclick="filterByAssignee(event)" '+
-      'style="width:32px;height:32px;border-radius:50%;background:'+M_COLORS[i]+';color:#fff;font-size:.65rem;font-weight:700;border:2px solid transparent;cursor:pointer;transition:all .15s;" '+
-      'title="'+m+'">'+initials.charAt(0)+'</button>';
+      'style="width:32px;height:32px;border-radius:50%;overflow:hidden;border:2px solid transparent;cursor:pointer;transition:all .15s;padding:0;background:none;" '+
+      'title="'+m+'">'+
+      (M_PHOTOS[i]?'<img src="'+M_PHOTOS[i]+'" style="width:100%;height:100%;object-fit:cover;display:block;">':'<span style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:'+M_COLORS[i]+';color:#fff;font-size:.65rem;font-weight:700;">'+initials.charAt(0)+'</span>')+
+      '</button>';
   }).join('');
   const fc=document.getElementById('fCat');
   fc.innerHTML='<option value="">전체 카테고리</option>'+CATS.map(c=>'<option>'+c+'</option>').join('');
@@ -931,7 +1018,7 @@ function buildAC(sel){
     +'<div class="ac-nm">모두</div></label>';
   MEMBERS.forEach((m,i)=>{
     html+='<label><input type="checkbox" class="ac-member" value="'+m+'" '+(sel.includes(m)?'checked':'')+'>'
-      +'<div class="ac-av" style="background:'+M_COLORS[i]+';">'+m[0]+'</div>'
+      +(M_PHOTOS[i]?'<div class="ac-av" style="overflow:hidden;padding:0;"><img src="'+M_PHOTOS[i]+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;"></div>':'<div class="ac-av" style="background:'+M_COLORS[i]+';">'+m[0]+'</div>')
       +'<div class="ac-nm">'+m.split(' ')[0]+'</div></label>';
   });
   document.getElementById('tmAssigneeChecks').innerHTML=html;
