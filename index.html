@@ -884,7 +884,6 @@ function renderKPIList(plan,key){
         '<input type="number" value="'+(k.current||0)+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'current\',+this.value)" style="'+INP+'width:55px;font-size:1.5rem;font-weight:800;color:var(--text);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--sb-acc)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
         '<span style="font-size:.73rem;color:var(--hint);">/ </span>'+
         '<input type="number" value="'+k.target+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'target\',+this.value)" style="'+INP+'width:40px;font-size:.73rem;color:var(--hint);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--border)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
-        '<input type="text" value="'+(k.unit||'')+'" oninput="updKPI(\''+key+'\',\''+k.id+'\',\'unit\',this.value)" placeholder="단위" style="'+INP+'width:28px;font-size:.73rem;color:var(--hint);border-bottom:1px dashed transparent;" onfocus="this.style.borderBottomColor=\'var(--border)\'" onblur="this.style.borderBottomColor=\'transparent\'">'+
       '</div>'+
       '<div class="kpi-track"><div class="kpi-fill" style="width:'+pct+'%"></div></div>'+
       '<div class="kpi-pct">'+pct+'% 달성</div>'+
