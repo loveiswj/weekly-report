@@ -88,6 +88,8 @@ body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:var(--bg);co
 .atags{display:flex;flex-wrap:nowrap;gap:3px;overflow:hidden;}
 .t-table tbody tr.task-row{cursor:pointer;}
 .t-table tbody tr.task-row:hover td{background:#F4F6FA;}
+.t-table tbody tr.task-row.doing td{background:#EEF3FF;}
+.t-table tbody tr.task-row.doing:hover td{background:#E4ECFF;}
 .atag{font-size:.66rem;font-weight:400;padding:2px 7px;border-radius:20px;color:#1A202C;}
 /* 버튼 */
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:.77rem;font-weight:600;cursor:pointer;font-family:inherit;border:none;transition:all .15s;}
@@ -865,8 +867,8 @@ function renderTaskTable(){
     if(collapsed)return;
     ct.forEach(t=>{
       {
-        const rowStyle=t.status==='완료'?'opacity:.55;':t.status==='진행중'?'background:#EEF3FF;':'';
-        rows+='<tr class="task-row" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
+        const rowStyle=t.status==='완료'?'opacity:.55;':'';
+        rows+='<tr class="task-row'+(t.status==='진행중'?' doing':'')+'" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
           '<td style="color:var(--hint);font-size:.69rem;border-left:0;">'+no+'</td>'+
           '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
           '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
