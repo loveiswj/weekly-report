@@ -780,7 +780,7 @@ function renderHome(){
     const pct=tasks.length?Math.round(doneT.length/tasks.length*100):0;
     const div=document.createElement('div');div.className='mc';
     div.innerHTML=
-      '<div class="mc-head">'+mAvatar(i,36)++
+      '<div class="mc-head">'+mAvatar(i,36)+
       '<div><div class="mc-name">'+name+'</div><div class="mc-role">'+(name===MANAGER?'팀장':'팀원')+'</div></div></div>'+
       '<div class="mc-stat"><span class="mc-today-lbl">오늘 할일</span><span class="mc-today-cnt">'+todayT.length+'건</span></div>'+
       '<div class="mc-bar-wrap"><div class="mc-bar-fill" style="width:'+pct+'%"></div></div>'+
