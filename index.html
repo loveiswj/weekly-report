@@ -627,6 +627,7 @@ const SB_URL='https://qfzwsthshflndwwjsikp.supabase.co';
 const SB_KEY='sb_publishable_e6NdNG3UqxBQZS2FMp5srg_7ZQBB-sv';
 const _sb=supabase.createClient(SB_URL,SB_KEY);
 let _syncTimer=null;
+let _lastSaveAt='';
 
 function setSyncStatus(s){
   const el=document.getElementById('syncStatus');
@@ -646,8 +647,10 @@ async function cloudLoad(){
 }
 
 async function cloudSave(d){
+  const ts=new Date().toISOString();
+  _lastSaveAt=ts; // 내 저장 타임스탬프 기록 (real-time 가드용)
   try{
-    await _sb.from('app_state').upsert({id:'main',data:d,updated_at:new Date().toISOString()},{onConflict:'id'});
+    await _sb.from('app_state').upsert({id:'main',data:d,updated_at:ts},{onConflict:'id'});
     setSyncStatus('ok');
   }catch(e){console.warn('cloud save:',e);setSyncStatus('error');}
 }
@@ -1038,10 +1041,8 @@ function renderTaskTable(){
 
 function toggleCat(cat){if(_collapsedCats.has(cat))_collapsedCats.delete(cat);else _collapsedCats.add(cat);renderTaskTable();}
 function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p=getPlan(key);p.tasks=p.tasks.filter(t=>t.id!==id);savePlan(key,p);renderTaskTable();
-  // 즉시 저장하되, 저장 완료 전까지 real-time 가드 유지 (덮어쓰기 방지)
-  clearTimeout(_syncTimer);
-  _syncTimer=setTimeout(()=>{_syncTimer=null;},5000); // 최대 5초 가드
-  cloudSave(loadData()).then(()=>{clearTimeout(_syncTimer);_syncTimer=null;});
+  // 즉시 클라우드 저장 (_lastSaveAt이 real-time 루프 차단)
+  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
 let editKey=null;
@@ -1812,16 +1813,28 @@ document.addEventListener('keydown',function(e){
       }
     }
   }).catch(()=>setSyncStatus('error'));
-  // 실시간 동기화 구독 (다른 사람이 변경하면 자동 반영)
+  // 실시간 동기화 구독 (팀원 변경사항 즉시 반영)
   _sb.channel('app_state_rt')
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_state'},
       payload=>{
-        if(payload.new&&payload.new.data){
-          if(_syncTimer!=null){setSyncStatus('ok');return;}
-          localStorage.setItem(PLAN_KEY,JSON.stringify(payload.new.data));
-          renderHome();
-          setSyncStatus('ok');
-        }
+        if(!(payload.new&&payload.new.data))return;
+        // 편집 중이면 무시 (내 입력 덮어쓰기 방지)
+        if(_syncTimer!=null){setSyncStatus('ok');return;}
+        // 내가 방금 저장한 것이거나 더 오래된 이벤트면 무시
+        const incomingAt=payload.new.updated_at||'';
+        if(incomingAt&&_lastSaveAt&&incomingAt<=_lastSaveAt){setSyncStatus('ok');return;}
+        // 팀원의 더 최신 변경사항 → 적용
+        localStorage.setItem(PLAN_KEY,JSON.stringify(payload.new.data));
+        // 현재 보고 있는 탭 즉시 재렌더링
+        const activeTab=document.querySelector('.tab-page.active');
+        if(activeTab){
+          const tid=activeTab.id.replace('page-','');
+          if(tid==='home')renderHome();
+          else if(tid==='tasks')renderPlan();
+          else if(tid==='gantt')renderGantt();
+          else if(tid==='cal')renderCal();
+        } else renderHome();
+        setSyncStatus('ok');
       })
     .subscribe();
   initColResize();
