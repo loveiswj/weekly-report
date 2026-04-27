@@ -235,7 +235,6 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
     <div class="sb-sec">뷰</div>
     <div class="sb-item" id="tab-gantt" onclick="switchTab('gantt')">간트차트</div>
     <div class="sb-item" id="tab-cal" onclick="switchTab('cal')">캘린더</div>
-    <div class="sb-item" id="tab-vac" onclick="switchTab('vac')">휴가 관리</div>
     <div class="sb-sec">보고</div>
     <div class="sb-item" id="tab-report" onclick="switchTab('report')">주간보고</div>
   </nav>
@@ -405,14 +404,8 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
       </select>
     </div>
     <div class="card"><div id="calGrid"></div></div>
-  </div>
-</div>
-
-<!-- 휴가 관리 -->
-<div id="page-vac" class="tab-page">
-  <div class="wrap">
-    <!-- 신청 폼 -->
-    <div class="card" style="margin-bottom:14px;">
+    <!-- 휴가 신청 + 목록 -->
+    <div class="card" style="margin-top:14px;">
       <div class="card-title">휴가 신청</div>
       <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
         <div class="f" style="min-width:110px;flex:1;">
@@ -443,17 +436,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
           <button class="btn btn-p btn-sm" onclick="addVacation()" style="height:36px;padding:0 18px;font-size:.8rem;">+ 신청</button>
         </div>
       </div>
-      <!-- 신청 목록 -->
       <div id="vacList" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;"></div>
-    </div>
-    <!-- 캘린더 -->
-    <div class="card">
-      <div class="mnav">
-        <button class="mnav-btn" onclick="moveVacMonth(-1)">&#9664;</button>
-        <span class="mnav-lbl" id="vacMonthLbl"></span>
-        <button class="mnav-btn" onclick="moveVacMonth(1)">&#9654;</button>
-      </div>
-      <div id="vacGrid"></div>
     </div>
   </div>
 </div>
@@ -784,9 +767,9 @@ function getPlan(key){const d=loadData();if(!d.plans[key])d.plans[key]={kpis:[],
 function savePlan(key,plan){const d=loadData();d.plans[key]=plan;saveData(d);}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
 
-const TAB_TITLES={home:'대시보드',tasks:'업무 관리',gantt:'간트차트',cal:'캘린더',vac:'휴가 관리',report:'주간보고'};
+const TAB_TITLES={home:'대시보드',tasks:'업무 관리',gantt:'간트차트',cal:'캘린더',report:'주간보고'};
 function switchTab(t){
-  ['home','tasks','gantt','cal','vac','report'].forEach(x=>{
+  ['home','tasks','gantt','cal','report'].forEach(x=>{
     document.getElementById('page-'+x).classList.toggle('active',x===t);
     document.getElementById('tab-'+x).classList.toggle('active',x===t);
   });
@@ -795,7 +778,7 @@ function switchTab(t){
   if(t==='tasks')renderPlan();
   if(t==='gantt')renderGantt();
   if(t==='cal')renderCal();
-  if(t==='vac')renderVacCal();
+  if(t==='cal'){renderCal();renderVacList();}
   if(t==='report'){
     loadSchedsFromTasks('this');
     loadSchedsFromTasks('next');
@@ -1426,41 +1409,44 @@ function renderCal(){
   const allData=loadData();const seen=new Set();const collected=[];
   Object.values(allData.plans||{}).forEach(p=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);collected.push(t);}}));
   const tasks=calFilter==='edu'?collected.filter(t=>eduCats.includes(t.category)):collected;
+  const vacs=loadVacs();
   const today=toISO(new Date());
   const daysInMonth=new Date(calY,calM+1,0).getDate();
   const dayNames=['월','화','수','목','금'];
   let html='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">';
-  // 요일 헤더 (별도 행)
   dayNames.forEach(d=>{html+='<div style="text-align:center;font-size:.82rem;font-weight:700;color:var(--sub);padding:7px 0;border-bottom:2px solid var(--border);">'+d+'</div>';});
   html+='</div><div class="cal-grid-wrap">';
-  // 시작 오프셋: 월요일=0 기준
   const firstDow=new Date(calY,calM,1).getDay();
-  // 1일이 토요일(6)이나 일요일(0)이면 다음 주 월요일부터 시작 → offset=0
   const offset=firstDow===0||firstDow===6?0:firstDow-1;
   let cellCount=offset;
   for(let i=0;i<offset;i++)html+='<div class="cal-cell empty-cell"></div>';
-  // 날짜 셀
   for(let d=1;d<=daysInMonth;d++){
     const dow=new Date(calY,calM,d).getDay();
     if(dow===0||dow===6)continue;
     const ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isT=ds===today;
     const dt=tasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=ds&&ds<=t.endDate);
+    const dv=vacs.filter(v=>v.startDate<=ds&&ds<=v.endDate);
     html+='<div class="cal-cell'+(isT?' today-cell':'')+'"><div class="cal-date">'+d+'</div><div class="cal-events">';
     dt.slice(0,3).forEach(t=>{
       const fa=t.assignees&&t.assignees[0];
       const ac=M_COLORS[MEMBERS.indexOf(fa)]||'#aaa';
       html+='<div class="cal-event" style="background:'+ac+'1A;border-left:3px solid '+ac+(t.status==='완료'?';opacity:.45':'')+'" title="'+esc(t.title)+'">'+esc(t.title)+'</div>';
     });
-    if(dt.length>3)html+='<div onclick="openCalDay(\''+ds+'\')" style="font-size:.63rem;color:var(--sb-acc);padding:2px 4px;cursor:pointer;font-weight:600;">+'+( dt.length-3)+'건 더 보기</div>';
+    if(dt.length>3)html+='<div onclick="openCalDay(\''+ds+'\')" style="font-size:.63rem;color:var(--sb-acc);padding:2px 4px;cursor:pointer;font-weight:600;">+'+(dt.length-3)+'건 더 보기</div>';
+    dv.forEach(v=>{
+      const ci=MEMBERS.indexOf(v.member);const col=M_COLORS[ci]||'#aaa';
+      const typeShort=v.type==='연차'?'연차':v.type==='오전반차'?'오전':' 오후';
+      html+='<div class="vac-event" style="background:'+col+';" title="'+v.member+' '+v.type+'"><span>'+v.member.split(' ')[0]+'</span><span style="opacity:.8;font-size:.55rem;">'+typeShort+'</span></div>';
+    });
     html+='</div></div>';
     cellCount++;
   }
-  // 마지막 행 빈칸으로 채우기 (5의 배수 맞춤)
   const remainder=cellCount%5;
   if(remainder!==0){for(let i=0;i<5-remainder;i++)html+='<div class="cal-cell empty-cell"></div>';}
-  html+='</div>';  // .cal-grid-wrap 닫기
+  html+='</div>';
   document.getElementById('calGrid').innerHTML=html;
+  renderVacList();
 }
 
 function openCalDay(ds){
@@ -1504,7 +1490,7 @@ function addVacation(){
   document.getElementById('vac-start').value='';
   document.getElementById('vac-end').value='';
   document.getElementById('vac-note').value='';
-  renderVacList();renderVacCal();
+  renderCal();
   clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
@@ -1512,7 +1498,7 @@ function delVacation(id){
   if(!confirm('삭제하시겠습니까?'))return;
   const vacs=loadVacs().filter(v=>v.id!==id);
   saveVacs(vacs);
-  renderVacList();renderVacCal();
+  renderCal();
   clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
@@ -2032,7 +2018,7 @@ document.addEventListener('keydown',function(e){
       if(tid==='tasks')renderPlan();
       else if(tid==='gantt')renderGantt();
       else if(tid==='cal')renderCal();
-      else if(tid==='vac')renderVacCal();
+      else if(tid==='cal')renderCal();
       else renderHome();
     } else if(status==='empty'){
       // Supabase가 진짜 비어있을 때만 로컬 데이터 업로드 (최초 1회)
@@ -2066,7 +2052,7 @@ document.addEventListener('keydown',function(e){
           else if(tid==='tasks')renderPlan();
           else if(tid==='gantt')renderGantt();
           else if(tid==='cal')renderCal();
-          else if(tid==='vac')renderVacCal();
+          else if(tid==='cal')renderCal();
         } else renderHome();
         setSyncStatus('ok');
       })
