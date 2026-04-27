@@ -1409,9 +1409,8 @@ function renderCal(){
 }
 
 function openCalDay(ds){
-  const key=mkKey(calY,calM);
-  const plan=getPlan(key);
-  const tasks=plan.tasks||[];
+  const allData=loadData();const seen=new Set();const tasks=[];
+  Object.values(allData.plans||{}).forEach(p=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);tasks.push(t);}}));
   const dt=tasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=ds&&ds<=t.endDate);
   const [y,m,d]=ds.split('-');
   document.getElementById('calDayTitle').textContent=y+'년 '+parseInt(m)+'월 '+parseInt(d)+'일 업무 ('+dt.length+'건)';
