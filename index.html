@@ -998,7 +998,7 @@ function renderPlan(){
   document.getElementById('planMonthLbl').textContent=isYear?planY+'년 전체':mlbl(planY,planM);
   const kpiGrid=document.getElementById('kpiTodoGrid');
   const addBtn=document.getElementById('addTaskBtn');
-  if(kpiGrid)kpiGrid.style.display=isYear?'none':'';
+  if(kpiGrid)kpiGrid.style.display=isYear?'none':'grid';
   if(addBtn)addBtn.style.display=isYear?'none':'';
   // 담당자 아이콘 버튼 생성
   const assigneeContainer=document.getElementById('assigneeFilterIcons');
