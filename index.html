@@ -129,6 +129,10 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
 .ac-group label:has(input:checked) .ac-av{opacity:1;box-shadow:0 0 0 3px var(--sb-acc);}
 .ac-nm{font-size:.61rem;color:var(--hint);transition:color .15s;white-space:nowrap;}
 .ac-group label:has(input:checked) .ac-nm{color:var(--sb-acc);font-weight:600;}
+/* 열너비 조정 핸들 */
+.t-table th{position:relative;}
+.col-resizer{position:absolute;right:0;top:0;width:6px;height:100%;cursor:col-resize;user-select:none;z-index:1;}
+.col-resizer:hover,.col-resizer.resizing{background:rgba(58,101,218,.35);}
 /* 간트 */
 .gantt-wrap{overflow-x:auto;width:100%;}
 /* 캘린더 */
@@ -341,12 +345,12 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
       </div>
       <div style="overflow-x:auto;">
         <table class="t-table" style="table-layout:fixed;">
-          <colgroup>
+          <colgroup id="taskColgroup">
             <col style="width:36px;"><col style="width:220px;"><col style="width:120px;">
             <col style="width:68px;"><col style="width:68px;"><col style="width:100px;"><col style="width:60px;">
             <col style="width:110px;"><col style="width:48px;">
           </colgroup>
-          <thead><tr>
+          <thead><tr id="taskThead">
             <th>NO</th>
             <th>업무명</th>
             <th>담당자</th>
@@ -1362,15 +1366,19 @@ function openCalDay(ds){
 function autoFill(){
   const author=document.getElementById('author').value;
   const info=getWeekInfo(weekOff);
-  const key=mkKey(new Date().getFullYear(),new Date().getMonth());
-  const plan=getPlan(key);
-  const mine=(plan.tasks||[]).filter(t=>{
+  // 전체 월 데이터에서 수집
+  const allData=loadData();
+  const seen=new Set();const allTasks=[];
+  Object.values(allData.plans||{}).forEach(plan=>{
+    (plan.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push(t);}});
+  });
+  const mine=allTasks.filter(t=>{
     if(!t.assignees||!t.assignees.includes(author))return false;
     const s=t.startDate||'',e=t.endDate||'';
     if(!s&&!e)return false;
     return s<=info.end&&e>=info.start;
   });
-  if(!mine.length){showRStatus('이번주 배정된 업무가 없습니다.','info');return;}
+  if(!mine.length){showRStatus('이번주 '+author+' 배정 업무가 없습니다.','info');return;}
   document.getElementById('rTaskList').innerHTML='';
   mine.forEach(t=>addRTask({cat:t.category,content:t.title,pct:String(t.pct||0),status:t.status==='완료'?'완료':t.status==='진행중'?'진행중':'예정'}));
   showRStatus(mine.length+'건의 업무를 불러왔습니다.','ok');
@@ -1811,7 +1819,40 @@ document.addEventListener('keydown',function(e){
         }
       })
     .subscribe();
+  initColResize();
 })();
+
+/* 열너비 드래그 조정 */
+function initColResize(){
+  const thead=document.getElementById('taskThead');
+  const cg=document.getElementById('taskColgroup');
+  if(!thead||!cg)return;
+  const cols=cg.querySelectorAll('col');
+  [...thead.querySelectorAll('th')].forEach((th,i)=>{
+    if(i===0||i===cols.length-1)return; // NO열, 삭제열 제외
+    const handle=document.createElement('div');
+    handle.className='col-resizer';
+    th.appendChild(handle);
+    let startX,startW;
+    handle.addEventListener('mousedown',e=>{
+      e.preventDefault();e.stopPropagation();
+      handle.classList.add('resizing');
+      startX=e.clientX;
+      startW=parseInt(cols[i].style.width)||th.offsetWidth;
+      function onMove(e){
+        const w=Math.max(40,startW+(e.clientX-startX));
+        cols[i].style.width=w+'px';
+      }
+      function onUp(){
+        handle.classList.remove('resizing');
+        document.removeEventListener('mousemove',onMove);
+        document.removeEventListener('mouseup',onUp);
+      }
+      document.addEventListener('mousemove',onMove);
+      document.addEventListener('mouseup',onUp);
+    });
+  });
+}
 
 </script>
 </body>
