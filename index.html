@@ -313,33 +313,18 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
         </div>
         <div id="kpiList"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="postit-card">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
-            <span style="font-size:.72rem;font-weight:600;color:#706840;letter-spacing:.02em;">해야 할 일</span>
-            <span style="font-size:.63rem;color:#A09840;" id="todoStats"></span>
-          </div>
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <input type="text" id="todoInput" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo('g')"
-              style="flex:1;padding:5px 8px;border:1px solid #E0DAB8;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#3A3210;">
-            <button class="btn btn-sm" onclick="addTodo('g')" style="background:#E8E0A0;border:none;color:#4A4010;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
-          </div>
-          <div id="todoList"></div>
-          <div id="todoEmpty" class="empty" style="display:none;padding:.5rem;color:#B0A850;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
+      <div class="postit-card" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
+          <span style="font-size:.72rem;font-weight:600;color:#706840;letter-spacing:.02em;">해야 할 일</span>
+          <span style="font-size:.63rem;color:#A09840;" id="todoStats"></span>
         </div>
-        <div class="postit-card onsite">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;">
-            <span style="font-size:.72rem;font-weight:600;color:#2A5868;letter-spacing:.02em;">온사이트 교육</span>
-            <span style="font-size:.63rem;color:#4A8898;" id="todo2Stats"></span>
-          </div>
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <input type="text" id="todo2Input" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo('o')"
-              style="flex:1;padding:5px 8px;border:1px solid #B4D0DC;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#1A3A42;">
-            <button class="btn btn-sm" onclick="addTodo('o')" style="background:#A0C8D4;border:none;color:#1A3A42;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
-          </div>
-          <div id="todo2List"></div>
-          <div id="todo2Empty" class="empty" style="display:none;padding:.5rem;color:#4A8898;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input type="text" id="todoInput" placeholder="입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo('g')"
+            style="flex:1;padding:5px 8px;border:1px solid #E0DAB8;border-radius:6px;font-size:.69rem;font-family:inherit;background:rgba(255,255,255,.6);outline:none;color:#3A3210;">
+          <button class="btn btn-sm" onclick="addTodo('g')" style="background:#E8E0A0;border:none;color:#4A4010;font-weight:500;border-radius:6px;padding:0 10px;cursor:pointer;font-size:.65rem;">추가</button>
         </div>
+        <div id="todoList"></div>
+        <div id="todoEmpty" class="empty" style="display:none;padding:.5rem;color:#B0A850;background:none;font-size:.68rem;">할 일을 추가해보세요</div>
       </div>
     </div>
     <div class="card">
@@ -1255,7 +1240,6 @@ function _saveTodos(skey,todos){const all=_loadAllTodos();all[skey]=todos;localS
 
 const TODO_SECTIONS=[
   {id:'g',inputId:'todoInput',listId:'todoList',statsId:'todoStats',emptyId:'todoEmpty'},
-  {id:'o',inputId:'todo2Input',listId:'todo2List',statsId:'todo2Stats',emptyId:'todo2Empty'},
 ];
 
 function renderTodos(){
