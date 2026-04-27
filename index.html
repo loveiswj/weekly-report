@@ -883,9 +883,8 @@ function toggleMemberDetail(name,ts){
   const w1=getWeekDays(0),w2=getWeekDays(1);
   const w1s=toISO(w1[0]),w1e=toISO(w1[4]);
   const w2s=toISO(w2[0]),w2e=toISO(w2[4]);
-  const monthKeys=[...new Set([w1[0],w1[4],w2[0],w2[4],new Date()].map(d=>mkKey(d.getFullYear(),d.getMonth())))];
   const seen=new Set();let allTasks=[];
-  monthKeys.forEach(k=>(getPlan(k).tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push({t,k});}}));
+  Object.entries(loadData().plans||{}).forEach(([k,p])=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push({t,k});}}));
   const mine=allTasks.filter(({t})=>t.assignees&&t.assignees.includes(name)&&t.status!=='완료');
   const thisWeek=mine.filter(({t})=>t.startDate&&t.endDate&&t.startDate<=w1e&&t.endDate>=w1s);
   const nextWeek=mine.filter(({t})=>t.startDate&&t.endDate&&t.startDate<=w2e&&t.endDate>=w2s&&!(t.startDate<=w1e&&t.endDate>=w1s));
@@ -2019,7 +2018,13 @@ document.addEventListener('keydown',function(e){
   cloudLoad().then(updated=>{
     setSyncStatus('ok');
     if(updated){
-      renderHome();
+      const activeTab=document.querySelector('.tab-page.active');
+      const tid=activeTab?activeTab.id.replace('page-',''):'home';
+      if(tid==='tasks')renderPlan();
+      else if(tid==='gantt')renderGantt();
+      else if(tid==='cal')renderCal();
+      else if(tid==='vac')renderVacCal();
+      else renderHome();
     } else {
       // 클라우드가 비어있으면 로컬 데이터를 클라우드에 업로드
       const local=loadData();
