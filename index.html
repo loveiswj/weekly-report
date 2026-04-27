@@ -1021,46 +1021,47 @@ function renderYearView(){
   const fc=document.getElementById('fCat')?.value||'';
   const showPast=document.getElementById('showPastTasks')?.checked||false;
   const today=toISO(new Date());
-  const MNAMES=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  let rows='';let totalCount=0;
+  // 전체 연도 업무 수집 (중복 제거, planKey 보존)
+  const seen=new Set();let allTasks=[];
   for(let m=0;m<12;m++){
-    const key=mkKey(planY,m);
-    const plan=getPlan(key);
-    let tasks=plan.tasks||[];
-    if(fa)tasks=tasks.filter(t=>t.assignees&&t.assignees.includes(fa));
-    if(fs)tasks=tasks.filter(t=>t.status===fs);
-    if(fc)tasks=tasks.filter(t=>t.category===fc);
-    if(!showPast)tasks=tasks.filter(t=>{if(t.endDate)return t.endDate>=today;if(t.startDate)return t.startDate>=today;return true;});
-    if(!tasks.length)continue;
-    totalCount+=tasks.length;
-    rows+='<tr class="year-month-row"><td colspan="9">'+planY+'년 '+MNAMES[m]+'<span style="font-size:.65rem;font-weight:400;margin-left:8px;opacity:.7;">'+tasks.length+'건</span></td></tr>';
-    CATS.forEach(cat=>{
-      const ct=tasks.filter(t=>t.category===cat);if(!ct.length)return;
-      const cc=CAT_COLORS[cat]||'#aaa';
-      const catKey=cat+'_y'+m;
-      const collapsed=_collapsedCats.has(catKey);
-      rows+='<tr class="cat-row" onclick="toggleCat(\''+catKey+'\')" style="cursor:pointer;"><td colspan="9" style="border-left-color:'+cc+';color:'+cc+';user-select:none;">'+cat+'</td></tr>';
-      if(collapsed)return;
-      let no=1;
-      ct.forEach(t=>{
-        const rowStyle=t.status==='완료'?'opacity:.55;':'';
-        rows+='<tr class="task-row'+(t.status==='진행중'?' doing':'')+'" style="'+rowStyle+'" onclick="openEditTask(\''+key+'\',\''+t.id+'\')">'+
-          '<td style="color:var(--hint);font-size:.69rem;border-left:0;">'+no+'</td>'+
-          '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
-          '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
-          '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
-          '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate?t.endDate.slice(5):'-')+'</td>'+
-          '<td><div class="pbar"><div class="pbar-track"><div class="pbar-fill" style="width:'+(t.pct||0)+'%"></div></div><span class="pbar-num">'+(t.pct||0)+'%</span></div></td>'+
-          '<td><span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span></td>'+
-          '<td style="font-size:.67rem;color:var(--sub);">'+(t.note?esc(t.note):'-')+'</td>'+
-          '<td onclick="event.stopPropagation()"><button class="btn btn-d btn-sm" onclick="delTask(\''+key+'\',\''+t.id+'\')">삭제</button></td>'+
-        '</tr>';
-        no++;
-      });
+    const planKey=mkKey(planY,m);
+    (getPlan(planKey).tasks||[]).forEach(t=>{
+      if(seen.has(t.id))return;seen.add(t.id);
+      allTasks.push({...t,_planKey:planKey});
     });
   }
-  if(!totalCount){tbody.innerHTML='';empty.style.display='block';return;}
+  if(fa)allTasks=allTasks.filter(t=>t.assignees&&t.assignees.includes(fa));
+  if(fs)allTasks=allTasks.filter(t=>t.status===fs);
+  if(fc)allTasks=allTasks.filter(t=>t.category===fc);
+  if(!showPast)allTasks=allTasks.filter(t=>{if(t.endDate)return t.endDate>=today;if(t.startDate)return t.startDate>=today;return true;});
+  if(!allTasks.length){tbody.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
+  let rows='';
+  CATS.forEach(cat=>{
+    const ct=allTasks.filter(t=>t.category===cat);if(!ct.length)return;
+    ct.sort((a,b)=>(a.startDate||'9999')>(b.startDate||'9999')?1:-1);
+    const cc=CAT_COLORS[cat]||'#aaa';
+    const catKey=cat+'_yr';
+    const collapsed=_collapsedCats.has(catKey);
+    rows+='<tr class="cat-row" onclick="toggleCat(\''+catKey+'\')" style="cursor:pointer;"><td colspan="9" style="border-left-color:'+cc+';color:'+cc+';user-select:none;">'+cat+'<span style="font-size:.65rem;font-weight:400;margin-left:8px;opacity:.7;">'+ct.length+'건</span></td></tr>';
+    if(collapsed)return;
+    let no=1;
+    ct.forEach(t=>{
+      const rowStyle=t.status==='완료'?'opacity:.55;':'';
+      rows+='<tr class="task-row'+(t.status==='진행중'?' doing':'')+'" style="'+rowStyle+'" onclick="openEditTask(\''+t._planKey+'\',\''+t.id+'\')">'+
+        '<td style="color:var(--hint);font-size:.69rem;border-left:0;">'+no+'</td>'+
+        '<td style="font-size:.72rem;">'+esc(t.title)+'</td>'+
+        '<td><div class="atags">'+(t.assignees||[]).map(a=>{const ci=MEMBERS.indexOf(a);return'<span class="atag" style="background:'+M_COLORS[ci]+'30;">'+a.split(' ')[0]+'</span>';}).join('')+'</div></td>'+
+        '<td style="font-size:.67rem;color:var(--sub);">'+(t.startDate?t.startDate.slice(5):'-')+'</td>'+
+        '<td style="font-size:.67rem;color:var(--sub);">'+(t.endDate?t.endDate.slice(5):'-')+'</td>'+
+        '<td><div class="pbar"><div class="pbar-track"><div class="pbar-fill" style="width:'+(t.pct||0)+'%"></div></div><span class="pbar-num">'+(t.pct||0)+'%</span></div></td>'+
+        '<td><span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span></td>'+
+        '<td style="font-size:.67rem;color:var(--sub);">'+(t.note?esc(t.note):'-')+'</td>'+
+        '<td onclick="event.stopPropagation()"><button class="btn btn-d btn-sm" onclick="delTask(\''+t._planKey+'\',\''+t.id+'\')">삭제</button></td>'+
+      '</tr>';
+      no++;
+    });
+  });
   tbody.innerHTML=rows;
 }
 
