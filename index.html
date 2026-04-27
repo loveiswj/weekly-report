@@ -1450,7 +1450,8 @@ function renderCal(){
     dt.slice(0,3).forEach(t=>{
       const fa=t.assignees&&t.assignees[0];
       const ac=M_COLORS[MEMBERS.indexOf(fa)]||'#aaa';
-      html+='<div class="cal-event" style="background:'+ac+'1A;border-left:3px solid '+ac+(t.status==='완료'?';opacity:.45':'')+'" title="'+esc(t.title)+'">'+esc(t.title)+'</div>';
+      const initials=(t.assignees||[]).map(a=>'('+a[0]+')').join('');
+      html+='<div class="cal-event" style="background:'+ac+'1A;border-left:3px solid '+ac+(t.status==='완료'?';opacity:.45':'')+'" title="'+esc(t.title)+'">'+(initials?'<span style="font-weight:700;margin-right:3px;color:'+ac+';">'+initials+'</span>':'')+esc(t.title)+'</div>';
     });
     if(dt.length>3)html+='<div onclick="openCalDay(\''+ds+'\')" style="font-size:.63rem;color:var(--sb-acc);padding:2px 4px;cursor:pointer;font-weight:600;">+'+(dt.length-3)+'건 더 보기</div>';
     dv.forEach(v=>{
