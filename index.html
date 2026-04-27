@@ -1119,8 +1119,8 @@ function renderTaskTable(){
   Object.entries(allData.plans||{}).forEach(([planKey,p])=>{
     (p.tasks||[]).forEach(t=>{
       if(seen.has(t.id))return;seen.add(t.id);
-      const dispMonth=t.startDate?t.startDate.slice(0,7):planKey;
-      if(dispMonth===currentMonthStr)tasks.push({...t,_planKey:planKey});
+      const dispMonth=t.startDate?t.startDate.slice(0,7):null;
+      if(!dispMonth||dispMonth===currentMonthStr)tasks.push({...t,_planKey:planKey});
     });
   });
   if(fa)tasks=tasks.filter(t=>t.assignees&&t.assignees.includes(fa));
