@@ -1456,7 +1456,9 @@ function renderCal(){
     if(dow===0||dow===6)continue;
     const ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isT=ds===today;
-    const dt=tasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=ds&&ds<=t.endDate);
+    const calCatOrder=['교육','온사이트 교육'];
+    const dtRaw=tasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=ds&&ds<=t.endDate);
+    const dt=[...dtRaw.filter(t=>t.category==='교육'),...dtRaw.filter(t=>t.category==='온사이트 교육'),...dtRaw.filter(t=>t.category!=='교육'&&t.category!=='온사이트 교육')];
     const dv=vacs.filter(v=>v.startDate<=ds&&ds<=v.endDate);
     html+='<div class="cal-cell'+(isT?' today-cell':'')+'"><div class="cal-date">'+d+'</div><div class="cal-events">';
     dt.slice(0,3).forEach(t=>{
