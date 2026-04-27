@@ -1329,6 +1329,7 @@ function renderGantt(){
   Object.values(allData.plans||{}).forEach(p=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push(t);}}));
   const tasks=allTasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=winEnd&&t.endDate>=winStart);
 
+  window._ganttTaskMap={};tasks.forEach(t=>{window._ganttTaskMap[t.id]=t;});
   const wrap=document.getElementById('ganttWrap');
   if(!tasks.length){wrap.innerHTML='<div class="empty">이번 2주간 배정된 업무가 없습니다.</div>';return;}
 
@@ -1403,9 +1404,9 @@ function renderGantt(){
         const br=di===4?SEP:'border-right:1px solid #EDEEF3;';
         html+='<td style="padding:'+(inR?(prevIn?'6px 0':'6px 0 6px 3px'):(nextIn?'6px 3px 6px 0':'6px 3px'))+';background:'+cellBg+';'+br+'border-bottom:1px solid #EDEEF3;height:42px;">';
         if(inR){
-          html+='<div style="height:26px;background:'+aColor+opHex+
+          html+='<div onmouseover="showGanttTip(event,\''+t.id+'\')" onmousemove="posGanttTip(event)" onmouseout="hideGanttTip()" style="height:26px;background:'+aColor+opHex+
             ';border-radius:'+rl+' '+rr+' '+rr+' '+rl+
-            ';display:flex;align-items:center;padding:0 '+(prevIn?'0':'7px')+';overflow:hidden;">'+
+            ';display:flex;align-items:center;padding:0 '+(prevIn?'0':'7px')+';overflow:hidden;cursor:pointer;">'+
             (!prevIn?'<span style="font-size:.56rem;color:#1A202C;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(t.title)+'</span>':'')+
             '</div>';
         }
@@ -2111,6 +2112,29 @@ function initColResize(){
   });
 }
 
+
+function showGanttTip(e,tid){
+  const t=window._ganttTaskMap&&window._ganttTaskMap[tid];if(!t)return;
+  const tip=document.getElementById('ganttTip');
+  const assigneeStr=(t.assignees||[]).join(', ')||'-';
+  const statusBadge=t.status==='완료'?'✅':t.status==='진행중'?'🔄':'📋';
+  tip.innerHTML=
+    '<div style="font-weight:700;font-size:.76rem;margin-bottom:6px;line-height:1.4;">'+esc(t.title)+'</div>'+
+    '<div style="margin-bottom:3px;">👤 '+esc(assigneeStr)+'</div>'+
+    (t.startDate?'<div style="margin-bottom:3px;">📅 '+t.startDate+' ~ '+t.endDate+'</div>':'')+
+    '<div style="margin-bottom:'+(t.note?'3px':'0')+';">'+statusBadge+' '+t.status+' · '+(t.pct||0)+'%</div>'+
+    (t.note?'<div style="color:#bbb;font-size:.68rem;border-top:1px solid #444;padding-top:4px;margin-top:4px;">'+esc(t.note)+'</div>':'');
+  tip.style.display='block';
+  posGanttTip(e);
+}
+function posGanttTip(e){
+  const tip=document.getElementById('ganttTip');
+  const x=e.clientX+14,y=e.clientY-10;
+  tip.style.left=Math.min(x,window.innerWidth-(tip.offsetWidth||240)-10)+'px';
+  tip.style.top=Math.min(y,window.innerHeight-(tip.offsetHeight||130)-10)+'px';
+}
+function hideGanttTip(){const t=document.getElementById('ganttTip');if(t)t.style.display='none';}
 </script>
+<div id="ganttTip" style="position:fixed;z-index:9999;background:#1E2533;color:#e8eaf0;border-radius:10px;padding:10px 14px;font-size:.72rem;pointer-events:none;display:none;max-width:260px;box-shadow:0 4px 24px rgba(0,0,0,.3);line-height:1.65;"></div>
 </body>
 </html>
