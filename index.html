@@ -149,8 +149,8 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
 .cal-events{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;}
 .cal-event{font-size:.63rem;padding:3px 7px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-weight:400;line-height:1.4;flex-shrink:0;}
 /* 휴가 관리 */
-.vac-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--bg);font-size:.77rem;}
-.vac-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:.65rem;font-weight:700;color:#fff;}
+.vac-item{display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:5px;font-size:.7rem;}
+.vac-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:.6rem;font-weight:700;color:#fff;}
 .vac-badge.연차{background:#5A78B0;}
 .vac-badge.오전반차{background:#7B9A60;}
 .vac-badge.오후반차{background:#9A7850;}
@@ -1527,12 +1527,12 @@ function renderVacList(){
     const col=M_COLORS[ci]||'#aaa';
     const range=v.startDate===v.endDate?v.startDate.slice(5):(v.startDate.slice(5)+' ~ '+v.endDate.slice(5));
     return`<div class="vac-item">
-      <div class="vac-dot" style="background:${col};"></div>
-      <span style="font-weight:600;min-width:80px;">${v.member.split(' ')[0]} ${v.member.split(' ')[1]||''}</span>
-      <span style="color:var(--sub);min-width:110px;">${range}</span>
+      <div class="vac-dot" style="background:${col};width:6px;height:6px;border-radius:50%;flex-shrink:0;"></div>
+      <span style="font-weight:600;min-width:70px;color:var(--text);">${v.member.split(' ')[0]} ${v.member.split(' ')[1]||''}</span>
+      <span style="color:var(--sub);min-width:90px;">${range}</span>
       <span class="vac-badge ${v.type}">${v.type}</span>
-      ${v.note?`<span style="color:var(--sub);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.note)}</span>`:'<span style="flex:1;"></span>'}
-      <button onclick="delVacation('${v.id}')" style="border:none;background:none;color:var(--hint);cursor:pointer;font-size:.9rem;padding:0 4px;" title="삭제">✕</button>
+      ${v.note?`<span style="color:var(--hint);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(v.note)}</span>`:'<span style="flex:1;"></span>'}
+      <button onclick="delVacation('${v.id}')" style="border:none;background:none;color:var(--hint);cursor:pointer;font-size:.75rem;padding:0 2px;line-height:1;">✕</button>
     </div>`;
   }).join('');
 }
