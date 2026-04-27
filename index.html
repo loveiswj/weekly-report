@@ -1267,10 +1267,9 @@ function renderGantt(){
     '<span style="font-size:.71rem;display:flex;align-items:center;gap:3px;"><span class="dot" style="background:'+M_COLORS[i]+'"></span>'+m+'</span>'
   ).join('');
 
-  // 데이터 로드 (걸치는 월 모두)
-  const monthKeys=[...new Set([w1[0],w1[4],w2[0],w2[4]].map(d=>mkKey(d.getFullYear(),d.getMonth())))];
-  const seen=new Set();let allTasks=[];
-  monthKeys.forEach(k=>(getPlan(k).tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push(t);}}));
+  // 전체 월 데이터에서 수집 (등록된 월 관계없이 날짜로 필터)
+  const allData=loadData();const seen=new Set();let allTasks=[];
+  Object.values(allData.plans||{}).forEach(p=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push(t);}}));
   const tasks=allTasks.filter(t=>t.startDate&&t.endDate&&t.startDate<=winEnd&&t.endDate>=winStart);
 
   const wrap=document.getElementById('ganttWrap');
@@ -1365,12 +1364,13 @@ function renderGantt(){
 
 /* 캘린더 */
 function renderCal(){
-  const key=mkKey(calY,calM);const plan=getPlan(key);
   document.getElementById('calMonthLbl').textContent=mlbl(calY,calM);
   const sel=document.getElementById('calFilterSel');if(sel)sel.value=calFilter;
   const eduCats=['교육','온사이트 교육'];
-  const allTasks=plan.tasks||[];
-  const tasks=calFilter==='edu'?allTasks.filter(t=>eduCats.includes(t.category)):allTasks;
+  // 전체 월 데이터에서 중복 없이 수집
+  const allData=loadData();const seen=new Set();const collected=[];
+  Object.values(allData.plans||{}).forEach(p=>(p.tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);collected.push(t);}}));
+  const tasks=calFilter==='edu'?collected.filter(t=>eduCats.includes(t.category)):collected;
   const today=toISO(new Date());
   const daysInMonth=new Date(calY,calM+1,0).getDate();
   const dayNames=['월','화','수','목','금'];
