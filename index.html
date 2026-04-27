@@ -903,6 +903,17 @@ function toggleMemberDetail(name,ts){
     return'<div><div style="font-size:.67rem;font-weight:700;color:'+col+';padding:8px 12px 4px;letter-spacing:.04em;">'+label+' ('+list.length+')</div>'+
       list.map(({t,k})=>mtItem(t,isToday(t,ts),t.status==='완료',k)).join('')+'</div>';
   }
+  function sectionByCat(label,col,list){
+    if(!list.length)return'';
+    let html='<div><div style="font-size:.67rem;font-weight:700;color:'+col+';padding:8px 12px 4px;letter-spacing:.04em;">'+label+' ('+list.length+')</div>';
+    CATS.forEach(cat=>{
+      const ct=list.filter(({t})=>t.category===cat);if(!ct.length)return;
+      const cc=CAT_COLORS[cat]||'#aaa';
+      html+='<div style="font-size:.63rem;font-weight:700;color:'+cc+';padding:4px 12px 2px;border-left:3px solid '+cc+';margin:4px 8px 0;background:'+cc+'10;border-radius:0 4px 4px 0;">'+cat+' ('+ct.length+')</div>';
+      html+=ct.map(({t,k})=>mtItem(t,isToday(t,ts),t.status==='완료',k)).join('');
+    });
+    return html+'</div>';
+  }
 
   detail.style.display='block';
   detail.innerHTML='<div class="card" style="margin-bottom:0;">'+
@@ -913,7 +924,7 @@ function toggleMemberDetail(name,ts){
     (!mine.length?'<div class="empty">배정된 업무가 없습니다.</div>':
       section('금주 할일 ('+weekLbl(w1s,w1e)+')','#3A5499',thisWeek)+
       section('차주 할일 ('+weekLbl(w2s,w2e)+')','#7B6AA8',nextWeek)+
-      section('백로그','#6B7280',backlog)
+      sectionByCat('백로그','#6B7280',backlog)
     )+
   '</div>';
 }
