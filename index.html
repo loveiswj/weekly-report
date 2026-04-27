@@ -1157,9 +1157,14 @@ function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p
 }
 
 let editKey=null;
+function populateTmCat(selectedCat){
+  const sel=document.getElementById('tm-cat');
+  sel.innerHTML=CATS.map(c=>'<option'+(c===selectedCat?' selected':'')+'>'+c+'</option>').join('');
+}
 function openAddTask(){
   editKey=mkKey(planY,planM);
   document.getElementById('taskModalTitle').textContent='업무 추가';
+  populateTmCat('교육');
   clearTaskForm();document.getElementById('taskModal').classList.add('open');
   setTimeout(()=>document.getElementById('tm-title').focus(),100);
 }
@@ -1169,6 +1174,7 @@ function openEditTask(key,id){
   document.getElementById('taskModalTitle').textContent='업무 수정';
   document.getElementById('tm-id').value=id;
   document.getElementById('tm-title').value=t.title||'';
+  populateTmCat(t.category||'교육');
   document.getElementById('tm-cat').value=t.category||'교육';
   buildEduPresets(t.category||'교육');
   document.getElementById('tm-start').value=t.startDate||'';
@@ -1219,6 +1225,7 @@ function saveTask(){
   if(id){const idx=plan.tasks.findIndex(t=>t.id===id);if(idx>=0)plan.tasks[idx]={...plan.tasks[idx],...data};}
   else plan.tasks.push({id:genId(),...data,completedAt:null});
   savePlan(editKey,plan);closeTaskModalBtn();if(planViewMode==='year')renderYearView();else renderTaskTable();
+  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 function closeTaskModal(e){if(e.target===document.getElementById('taskModal'))closeTaskModalBtn();}
 function closeTaskModalBtn(){document.getElementById('taskModal').classList.remove('open');}
@@ -1498,6 +1505,7 @@ function addVacation(){
   document.getElementById('vac-end').value='';
   document.getElementById('vac-note').value='';
   renderVacList();renderVacCal();
+  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
 function delVacation(id){
@@ -1505,6 +1513,7 @@ function delVacation(id){
   const vacs=loadVacs().filter(v=>v.id!==id);
   saveVacs(vacs);
   renderVacList();renderVacCal();
+  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
 function renderVacList(){
