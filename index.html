@@ -694,9 +694,9 @@ function setSyncStatus(s){
 async function cloudLoad(){
   try{
     const {data,error}=await _sb.from('app_state').select('data').eq('id','main').single();
-    if(data&&data.data){localStorage.setItem(PLAN_KEY,JSON.stringify(data.data));return true;}
-  }catch(e){console.warn('cloud load:',e);}
-  return false;
+    if(data&&data.data){localStorage.setItem(PLAN_KEY,JSON.stringify(data.data));return 'loaded';}
+    return 'empty';
+  }catch(e){console.warn('cloud load:',e);return 'error';}
 }
 
 async function cloudSave(d){
@@ -2015,25 +2015,28 @@ document.addEventListener('keydown',function(e){
   renderHome();
   // 클라우드에서 최신 데이터 로드
   setSyncStatus('loading');
-  cloudLoad().then(updated=>{
-    setSyncStatus('ok');
-    if(updated){
-      const activeTab=document.querySelector('.tab-page.active');
-      const tid=activeTab?activeTab.id.replace('page-',''):'home';
+  cloudLoad().then(status=>{
+    const activeTab=document.querySelector('.tab-page.active');
+    const tid=activeTab?activeTab.id.replace('page-',''):'home';
+    if(status==='loaded'){
+      setSyncStatus('ok');
       if(tid==='tasks')renderPlan();
       else if(tid==='gantt')renderGantt();
       else if(tid==='cal')renderCal();
       else if(tid==='vac')renderVacCal();
       else renderHome();
-    } else {
-      // 클라우드가 비어있으면 로컬 데이터를 클라우드에 업로드
+    } else if(status==='empty'){
+      // Supabase가 진짜 비어있을 때만 로컬 데이터 업로드 (최초 1회)
+      setSyncStatus('ok');
       const local=loadData();
-      if(Object.keys(local.plans||{}).length>0){
-        setSyncStatus('saving');
-        cloudSave(local);
-      }
+      if(Object.keys(local.plans||{}).length>0)cloudSave(local);
+      else renderHome();
+    } else {
+      // 네트워크 오류 — 클라우드 건드리지 않고 로컬 데이터로만 표시
+      setSyncStatus('error');
+      renderHome();
     }
-  }).catch(()=>setSyncStatus('error'));
+  }).catch(()=>{setSyncStatus('error');renderHome();});
   // 실시간 동기화 구독 (팀원 변경사항 즉시 반영)
   _sb.channel('app_state_rt')
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'app_state'},
