@@ -1226,7 +1226,7 @@ function saveTask(){
     note:document.getElementById('tm-note').value.trim()};
   if(id){const idx=plan.tasks.findIndex(t=>t.id===id);if(idx>=0)plan.tasks[idx]={...plan.tasks[idx],...data};}
   else plan.tasks.push({id:genId(),...data,completedAt:null});
-  savePlan(editKey,plan);closeTaskModalBtn();renderTaskTable();
+  savePlan(editKey,plan);closeTaskModalBtn();if(planViewMode==='year')renderYearView();else renderTaskTable();
 }
 function closeTaskModal(e){if(e.target===document.getElementById('taskModal'))closeTaskModalBtn();}
 function closeTaskModalBtn(){document.getElementById('taskModal').classList.remove('open');}
