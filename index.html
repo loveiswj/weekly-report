@@ -560,7 +560,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
           </div>
         </div>
         <div class="f"><label>카테고리</label>
-          <select id="tm-cat" onchange="buildEduPresets(this.value)"><option>교육</option><option>온사이트 교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>기타</option></select>
+          <select id="tm-cat" onchange="buildEduPresets(this.value)"><option>교육</option><option>온사이트 교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>온라인 가이드 수정</option><option>기타</option></select>
         </div>
       </div>
       <div style="margin-bottom:9px;">
@@ -601,7 +601,7 @@ const CAT_KEY='bm_cats_v1';
 const DEFAULT_CATS=[
   {name:'교육',color:'#5A78B0'},{name:'온사이트 교육',color:'#4A8898'},
   {name:'그룹장님 지시업무',color:'#7B6AA8'},{name:'주요 업무',color:'#4A8870'},
-  {name:'커뮤니티',color:'#9A7850'},{name:'기타',color:'#7A8898'}
+  {name:'커뮤니티',color:'#9A7850'},{name:'온라인 가이드 수정',color:'#6B98B0'},{name:'기타',color:'#7A8898'}
 ];
 const CAT_PALETTE=['#5A78B0','#4A8898','#7B6AA8','#4A8870','#9A7850','#7A8898','#B05A5A','#5A9878','#8898AA','#AA7850','#6B78B0','#50A878'];
 function loadCats(){try{return JSON.parse(localStorage.getItem(CAT_KEY))||DEFAULT_CATS;}catch{return DEFAULT_CATS;}}
