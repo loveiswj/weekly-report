@@ -740,8 +740,8 @@ function switchTab(t){
   if(t==='gantt')renderGantt();
   if(t==='cal')renderCal();
   if(t==='report'){
-    if(!document.getElementById('thisWeekList').children.length)loadSchedsFromTasks('this');
-    if(!document.getElementById('nextWeekList').children.length)loadSchedsFromTasks('next');
+    loadSchedsFromTasks('this');
+    loadSchedsFromTasks('next');
   }
 }
 
@@ -1037,7 +1037,10 @@ function renderTaskTable(){
 }
 
 function toggleCat(cat){if(_collapsedCats.has(cat))_collapsedCats.delete(cat);else _collapsedCats.add(cat);renderTaskTable();}
-function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p=getPlan(key);p.tasks=p.tasks.filter(t=>t.id!==id);savePlan(key,p);renderTaskTable();}
+function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p=getPlan(key);p.tasks=p.tasks.filter(t=>t.id!==id);savePlan(key,p);renderTaskTable();
+  // 삭제는 즉시 클라우드 저장 (800ms 타이머 기다리지 않음)
+  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
+}
 
 let editKey=null;
 function openAddTask(){
