@@ -1038,8 +1038,10 @@ function renderTaskTable(){
 
 function toggleCat(cat){if(_collapsedCats.has(cat))_collapsedCats.delete(cat);else _collapsedCats.add(cat);renderTaskTable();}
 function delTask(key,id){if(!confirm('삭제하시겠습니까?'))return;const p=getPlan(key);p.tasks=p.tasks.filter(t=>t.id!==id);savePlan(key,p);renderTaskTable();
-  // 삭제는 즉시 클라우드 저장 (800ms 타이머 기다리지 않음)
-  clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
+  // 즉시 저장하되, 저장 완료 전까지 real-time 가드 유지 (덮어쓰기 방지)
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>{_syncTimer=null;},5000); // 최대 5초 가드
+  cloudSave(loadData()).then(()=>{clearTimeout(_syncTimer);_syncTimer=null;});
 }
 
 let editKey=null;
