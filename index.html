@@ -568,7 +568,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
           </div>
         </div>
         <div class="f"><label>카테고리</label>
-          <select id="tm-cat" onchange="buildEduPresets(this.value)"><option>교육</option><option>온사이트 교육</option><option>그룹장님 지시업무</option><option>주요 업무</option><option>커뮤니티</option><option>온라인 가이드 수정</option><option>기타</option></select>
+          <select id="tm-cat" onchange="buildEduPresets(this.value)"><option>교육</option><option>온사이트 교육</option><option>AI활용 온라인 교육시행</option><option>주요 업무</option><option>커뮤니티</option><option>온라인 가이드 수정</option><option>기타</option></select>
         </div>
       </div>
       <div style="margin-bottom:9px;">
@@ -608,7 +608,7 @@ function mAvatar(i,size){
 const CAT_KEY='bm_cats_v1';
 const DEFAULT_CATS=[
   {name:'교육',color:'#5A78B0'},{name:'온사이트 교육',color:'#4A8898'},
-  {name:'그룹장님 지시업무',color:'#7B6AA8'},{name:'주요 업무',color:'#4A8870'},
+  {name:'AI활용 온라인 교육시행',color:'#7B6AA8'},{name:'주요 업무',color:'#4A8870'},
   {name:'커뮤니티',color:'#9A7850'},{name:'온라인 가이드 수정',color:'#6B98B0'},{name:'기타',color:'#7A8898'}
 ];
 const CAT_PALETTE=['#5A78B0','#4A8898','#7B6AA8','#4A8870','#9A7850','#7A8898','#B05A5A','#5A9878','#8898AA','#AA7850','#6B78B0','#50A878'];
@@ -1671,14 +1671,14 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
       {id:genId(),title:'I-MATRIX 교육',category:'교육',group:'정기교육',assignees:['제현재 사원'],startDate:'2026-04-01',endDate:'2026-04-20',pct:30,status:'진행중',note:''},
       {id:genId(),title:'온사이트 - KIS 정보통신',category:'교육',group:'정기교육',assignees:['김원정 수석'],startDate:'2026-04-07',endDate:'2026-04-07',pct:0,status:'진행중',note:''},
       {id:genId(),title:'온사이트 - 농협은행',category:'교육',group:'정기교육',assignees:['김원정 수석'],startDate:'2026-03-27',endDate:'2026-03-27',pct:100,status:'완료',note:''},
-      {id:genId(),title:'교재발간 (사례분)',category:'그룹장님 지시업무',group:'',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-10',pct:20,status:'진행중',note:''},
-      {id:genId(),title:'콘텐츠 교재활용 방안',category:'그룹장님 지시업무',group:'',assignees:['장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-15',pct:10,status:'진행중',note:''},
-      {id:genId(),title:'Step 0: 콘텐츠 마인드셋 소개/업무분장',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원'],startDate:'2026-04-07',endDate:'2026-04-07',pct:0,status:'백로그',note:''},
-      {id:genId(),title:'Step 1: 퍼실리테이터 기반 커리큘럼 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-07',endDate:'2026-04-14',pct:0,status:'백로그',note:''},
-      {id:genId(),title:'Step 2: 콘텐츠 제작 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-14',endDate:'2026-04-21',pct:0,status:'백로그',note:''},
-      {id:genId(),title:'Step 3: 대내 저작 및 스타일 작성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-21',endDate:'2026-04-28',pct:0,status:'백로그',note:''},
-      {id:genId(),title:'Step 4: 교재 구성 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-28',endDate:'2026-05-05',pct:0,status:'백로그',note:''},
-      {id:genId(),title:'Step 5: AI 이미지 편집 및 활용 완성',category:'그룹장님 지시업무',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원','허선희'],startDate:'2026-05-05',endDate:'2026-05-12',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'교재발간 (사례분)',category:'AI활용 온라인 교육시행',group:'',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-10',pct:20,status:'진행중',note:''},
+      {id:genId(),title:'콘텐츠 교재활용 방안',category:'AI활용 온라인 교육시행',group:'',assignees:['장민지 선임'],startDate:'2026-04-05',endDate:'2026-04-15',pct:10,status:'진행중',note:''},
+      {id:genId(),title:'Step 0: 콘텐츠 마인드셋 소개/업무분장',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원'],startDate:'2026-04-07',endDate:'2026-04-07',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 1: 퍼실리테이터 기반 커리큘럼 완성',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-07',endDate:'2026-04-14',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 2: 콘텐츠 제작 완성',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-14',endDate:'2026-04-21',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 3: 대내 저작 및 스타일 작성',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임'],startDate:'2026-04-21',endDate:'2026-04-28',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 4: 교재 구성 완성',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['장민지 선임','제현재 사원'],startDate:'2026-04-28',endDate:'2026-05-05',pct:0,status:'백로그',note:''},
+      {id:genId(),title:'Step 5: AI 이미지 편집 및 활용 완성',category:'AI활용 온라인 교육시행',group:'AI 활용 교육기획',assignees:['김원정 수석','장민지 선임','제현재 사원','허선희'],startDate:'2026-05-05',endDate:'2026-05-12',pct:0,status:'백로그',note:''},
       {id:genId(),title:'AUOP 교육 라인 수립 추진',category:'주요 업무',group:'',assignees:['김원정 수석'],startDate:'2026-05-13',endDate:'2026-05-13',pct:0,status:'백로그',note:''},
       {id:genId(),title:'전체 프로그램 기획 (AI서비스 고객)',category:'커뮤니티',group:'',assignees:['김원정 수석'],startDate:'2026-04-06',endDate:'2026-04-10',pct:30,status:'진행중',note:''},
       {id:genId(),title:'치내 배상 문서 작성',category:'커뮤니티',group:'',assignees:['허선희'],startDate:'2026-04-01',endDate:'2026-04-22',pct:20,status:'진행중',note:''},
@@ -1741,7 +1741,7 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
     d.plans[key].tasks.push(t);
   }
   function mk(title,note){
-    return{id:genId(),title,category:'그룹장님 지시업무',group:'AI 활용 정기교육 기획안',
+    return{id:genId(),title,category:'AI활용 온라인 교육시행',group:'AI 활용 정기교육 기획안',
       assignees:['김원정 수석'],startDate:'',endDate:'',
       pct:0,status:'백로그',note:note||'',completedAt:null};
   }
