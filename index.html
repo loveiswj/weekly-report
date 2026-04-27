@@ -880,34 +880,27 @@ function toggleMemberDetail(name,ts){
     c.style.boxShadow=isMe?'0 0 0 2px var(--sb-acc)':'';
   });
 
-  const key=mkKey(new Date().getFullYear(),new Date().getMonth());
-  const plan=getPlan(key);
-  const tasks=(plan.tasks||[]).filter(t=>t.assignees&&t.assignees.includes(name));
-  const doing=tasks.filter(t=>t.status==='진행중');
-  const backlog=tasks.filter(t=>t.status==='백로그');
-  const done=tasks.filter(t=>t.status==='완료');
+  const w1=getWeekDays(0),w2=getWeekDays(1);
+  const w1s=toISO(w1[0]),w1e=toISO(w1[4]);
+  const w2s=toISO(w2[0]),w2e=toISO(w2[4]);
+  const monthKeys=[...new Set([w1[0],w1[4],w2[0],w2[4],new Date()].map(d=>mkKey(d.getFullYear(),d.getMonth())))];
+  const seen=new Set();let allTasks=[];
+  monthKeys.forEach(k=>(getPlan(k).tasks||[]).forEach(t=>{if(!seen.has(t.id)){seen.add(t.id);allTasks.push({t,k});}}));
+  const mine=allTasks.filter(({t})=>t.assignees&&t.assignees.includes(name)&&t.status!=='완료');
+  const thisWeek=mine.filter(({t})=>t.startDate&&t.endDate&&t.startDate<=w1e&&t.endDate>=w1s);
+  const nextWeek=mine.filter(({t})=>t.startDate&&t.endDate&&t.startDate<=w2e&&t.endDate>=w2s&&!(t.startDate<=w1e&&t.endDate>=w1s));
+  const thisWeekIds=new Set(thisWeek.map(({t})=>t.id));
+  const nextWeekIds=new Set(nextWeek.map(({t})=>t.id));
+  const backlog=mine.filter(({t})=>t.status==='백로그'&&!thisWeekIds.has(t.id)&&!nextWeekIds.has(t.id));
 
   const mi=MEMBERS.indexOf(name);
   const color=M_COLORS[mi]||'#888';
+  const weekLbl=(s,e)=>s.slice(5)+' ~ '+e.slice(5);
 
-  function taskRow(t){
-    const cc=CAT_COLORS[t.category]||'#aaa';
-    return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid #F0F2F8;">'+
-      '<input type="checkbox" style="accent-color:var(--sb-acc);cursor:pointer;flex-shrink:0;" '+(t.status==='완료'?'checked':'')+' onchange="toggleDone(\''+t.id+'\',\''+key+'\',this)">'+
-      '<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+cc+';flex-shrink:0;"></span>'+
-      '<span style="flex:1;font-size:.8rem;'+(t.status==='완료'?'text-decoration:line-through;color:var(--hint);':t.status==='진행중'?'font-weight:600;':'')+'">'+esc(t.title)+'</span>'+
-      '<span class="badge '+(t.status==='완료'?'b-done':t.status==='진행중'?'b-doing':'b-back')+'">'+t.status+'</span>'+
-      (t.pct?'<span style="font-size:.69rem;color:var(--sub);min-width:30px;">'+t.pct+'%</span>':'')+
-      (t.endDate?'<span style="font-size:.67rem;color:var(--hint);min-width:36px;">~'+t.endDate.slice(5)+'</span>':'')+
-    '</div>';
-  }
-
-  function section(label,color,list){
+  function section(label,col,list){
     if(!list.length)return'';
-    return'<div>'+
-      '<div style="font-size:.67rem;font-weight:700;color:'+color+';padding:8px 12px 4px;letter-spacing:.04em;">'+label+' ('+list.length+')</div>'+
-      list.map(taskRow).join('')+
-    '</div>';
+    return'<div><div style="font-size:.67rem;font-weight:700;color:'+col+';padding:8px 12px 4px;letter-spacing:.04em;">'+label+' ('+list.length+')</div>'+
+      list.map(({t,k})=>mtItem(t,isToday(t,ts),t.status==='완료',k)).join('')+'</div>';
   }
 
   detail.style.display='block';
@@ -915,12 +908,11 @@ function toggleMemberDetail(name,ts){
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:.8rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);">'+
       '<div style="width:32px;height:32px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#fff;">'+name[0]+'</div>'+
       '<span style="font-size:.88rem;font-weight:700;">'+name+'</span>'+
-      '<span style="font-size:.72rem;color:var(--sub);margin-left:auto;">이번달 '+tasks.length+'건 · 완료 '+done.length+'건</span>'+
     '</div>'+
-    (!tasks.length?'<div class="empty">이번달 배정된 업무가 없습니다.</div>':
-      section('진행중','#3A5499',doing)+
-      section('백로그','#6B7280',backlog)+
-      section('완료','#3A6E50',done)
+    (!mine.length?'<div class="empty">배정된 업무가 없습니다.</div>':
+      section('금주 할일 ('+weekLbl(w1s,w1e)+')','#3A5499',thisWeek)+
+      section('차주 할일 ('+weekLbl(w2s,w2e)+')','#7B6AA8',nextWeek)+
+      section('백로그','#6B7280',backlog)
     )+
   '</div>';
 }
