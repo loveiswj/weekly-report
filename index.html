@@ -140,7 +140,7 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
 .cal-date{font-size:.82rem;font-weight:700;color:var(--sub);margin-bottom:4px;flex-shrink:0;}
 .cal-cell.today-cell .cal-date{color:var(--sb-acc);}
 .cal-events{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:2px;}
-.cal-event{font-size:.74rem;padding:3px 7px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-weight:400;line-height:1.4;flex-shrink:0;}
+.cal-event{font-size:.63rem;padding:3px 7px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;font-weight:400;line-height:1.4;flex-shrink:0;}
 /* 주간보고 */
 .wk-nav{display:flex;align-items:center;gap:6px;}
 .wbtn{padding:4px 10px;border:1px solid var(--border);border-radius:7px;background:var(--card);cursor:pointer;font-size:.78rem;color:var(--sub);}
@@ -392,6 +392,10 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
       <button class="mnav-btn" onclick="moveCalMonth(-1)">&#9664;</button>
       <span class="mnav-lbl" id="calMonthLbl"></span>
       <button class="mnav-btn" onclick="moveCalMonth(1)">&#9654;</button>
+      <select id="calFilterSel" onchange="calFilter=this.value;renderCal()" style="margin-left:8px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-family:inherit;background:var(--card);color:var(--text);cursor:pointer;">
+        <option value="edu" selected>교육 일정만</option>
+        <option value="all">전체 보기</option>
+      </select>
     </div>
     <div class="card"><div id="calGrid"></div></div>
   </div>
@@ -741,6 +745,7 @@ let planY=new Date().getFullYear(),planM=new Date().getMonth();
 let ganttWkOffset=0;
 const _collapsedCats=new Set();
 let calY=new Date().getFullYear(),calM=new Date().getMonth();
+let calFilter='edu';
 
 function movePlanMonth(d){planM+=d;if(planM<0){planM=11;planY--;}if(planM>11){planM=0;planY++;}renderPlan();}
 function moveGanttWeek(d){ganttWkOffset+=d;renderGantt();}
@@ -1290,7 +1295,10 @@ function renderGantt(){
 function renderCal(){
   const key=mkKey(calY,calM);const plan=getPlan(key);
   document.getElementById('calMonthLbl').textContent=mlbl(calY,calM);
-  const tasks=plan.tasks||[];
+  const sel=document.getElementById('calFilterSel');if(sel)sel.value=calFilter;
+  const eduCats=['교육','온사이트 교육'];
+  const allTasks=plan.tasks||[];
+  const tasks=calFilter==='edu'?allTasks.filter(t=>eduCats.includes(t.category)):allTasks;
   const today=toISO(new Date());
   const daysInMonth=new Date(calY,calM+1,0).getDate();
   const dayNames=['월','화','수','목','금'];
