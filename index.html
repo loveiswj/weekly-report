@@ -394,49 +394,59 @@ body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);
 <!-- 캘린더 -->
 <div id="page-cal" class="tab-page">
   <div class="wrap">
-    <div class="mnav">
-      <button class="mnav-btn" onclick="moveCalMonth(-1)">&#9664;</button>
-      <span class="mnav-lbl" id="calMonthLbl"></span>
-      <button class="mnav-btn" onclick="moveCalMonth(1)">&#9654;</button>
-      <select id="calFilterSel" onchange="calFilter=this.value;renderCal()" style="margin-left:8px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-family:inherit;background:var(--card);color:var(--text);cursor:pointer;">
-        <option value="edu" selected>교육 일정만</option>
-        <option value="all">전체 보기</option>
-      </select>
+    <!-- 서브탭 -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;">
+      <button id="calSubTab-cal" class="view-tog-btn active" onclick="switchCalSub('cal')">📅 캘린더</button>
+      <button id="calSubTab-vac" class="view-tog-btn" onclick="switchCalSub('vac')">🏖 휴가</button>
     </div>
-    <div class="card"><div id="calGrid"></div></div>
-    <!-- 휴가 신청 + 목록 -->
-    <div class="card" style="margin-top:14px;">
-      <div class="card-title">휴가 신청</div>
-      <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
-        <div class="f" style="min-width:110px;flex:1;">
-          <label>팀원</label>
-          <select id="vac-member" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
-            <option>김원정 수석</option><option>장민지 선임</option><option>제현재 사원</option><option>허선희</option>
-          </select>
-        </div>
-        <div class="f" style="min-width:120px;flex:1;">
-          <label>시작일</label>
-          <input type="date" id="vac-start" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
-        </div>
-        <div class="f" style="min-width:120px;flex:1;">
-          <label>종료일</label>
-          <input type="date" id="vac-end" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
-        </div>
-        <div class="f" style="min-width:120px;flex:1;">
-          <label>구분</label>
-          <select id="vac-type" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
-            <option>연차</option><option>오전반차</option><option>오후반차</option>
-          </select>
-        </div>
-        <div class="f" style="min-width:140px;flex:2;">
-          <label>메모 (선택)</label>
-          <input type="text" id="vac-note" placeholder="사유 등" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
-        </div>
-        <div style="padding-bottom:1px;">
-          <button class="btn btn-p btn-sm" onclick="addVacation()" style="height:36px;padding:0 18px;font-size:.8rem;">+ 신청</button>
-        </div>
+    <!-- 캘린더 뷰 -->
+    <div id="calSubView-cal">
+      <div class="mnav">
+        <button class="mnav-btn" onclick="moveCalMonth(-1)">&#9664;</button>
+        <span class="mnav-lbl" id="calMonthLbl"></span>
+        <button class="mnav-btn" onclick="moveCalMonth(1)">&#9654;</button>
+        <select id="calFilterSel" onchange="calFilter=this.value;renderCal()" style="margin-left:8px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.75rem;font-family:inherit;background:var(--card);color:var(--text);cursor:pointer;">
+          <option value="edu" selected>교육 일정만</option>
+          <option value="all">전체 보기</option>
+        </select>
       </div>
-      <div id="vacList" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;"></div>
+      <div class="card"><div id="calGrid"></div></div>
+    </div>
+    <!-- 휴가 뷰 -->
+    <div id="calSubView-vac" style="display:none;">
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">휴가 신청</div>
+        <div class="row" style="gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div class="f" style="min-width:110px;flex:1;">
+            <label>팀원</label>
+            <select id="vac-member" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+              <option>김원정 수석</option><option>장민지 선임</option><option>제현재 사원</option><option>허선희</option>
+            </select>
+          </div>
+          <div class="f" style="min-width:120px;flex:1;">
+            <label>시작일</label>
+            <input type="date" id="vac-start" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+          </div>
+          <div class="f" style="min-width:120px;flex:1;">
+            <label>종료일</label>
+            <input type="date" id="vac-end" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+          </div>
+          <div class="f" style="min-width:120px;flex:1;">
+            <label>구분</label>
+            <select id="vac-type" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+              <option>연차</option><option>오전반차</option><option>오후반차</option>
+            </select>
+          </div>
+          <div class="f" style="min-width:140px;flex:2;">
+            <label>메모 (선택)</label>
+            <input type="text" id="vac-note" placeholder="사유 등" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:.8rem;font-family:inherit;">
+          </div>
+          <div style="padding-bottom:1px;">
+            <button class="btn btn-p btn-sm" onclick="addVacation()" style="height:36px;padding:0 18px;font-size:.8rem;">+ 신청</button>
+          </div>
+        </div>
+        <div id="vacList" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -805,6 +815,15 @@ function togglePlanView(mode){
 }
 function moveGanttWeek(d){ganttWkOffset+=d;renderGantt();}
 function moveCalMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
+let _calSub='cal';
+function switchCalSub(sub){
+  _calSub=sub;
+  document.getElementById('calSubView-cal').style.display=sub==='cal'?'':'none';
+  document.getElementById('calSubView-vac').style.display=sub==='vac'?'':'none';
+  document.getElementById('calSubTab-cal').classList.toggle('active',sub==='cal');
+  document.getElementById('calSubTab-vac').classList.toggle('active',sub==='vac');
+  if(sub==='vac')renderVacList();
+}
 function mlbl(y,m){return y+'년 '+(m+1)+'월';}
 
 /* 홈 */
@@ -1446,7 +1465,6 @@ function renderCal(){
   if(remainder!==0){for(let i=0;i<5-remainder;i++)html+='<div class="cal-cell empty-cell"></div>';}
   html+='</div>';
   document.getElementById('calGrid').innerHTML=html;
-  renderVacList();
 }
 
 function openCalDay(ds){
@@ -1490,7 +1508,7 @@ function addVacation(){
   document.getElementById('vac-start').value='';
   document.getElementById('vac-end').value='';
   document.getElementById('vac-note').value='';
-  renderCal();
+  renderVacList();
   clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
@@ -1498,7 +1516,7 @@ function delVacation(id){
   if(!confirm('삭제하시겠습니까?'))return;
   const vacs=loadVacs().filter(v=>v.id!==id);
   saveVacs(vacs);
-  renderCal();
+  renderVacList();
   clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());
 }
 
