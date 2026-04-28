@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>솔루션 교육팀 업무 관리 · 비아이매트릭스</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -711,8 +714,11 @@ function saveData(d){
   if(btn){btn.disabled=false;btn.style.color='rgba(255,255,255,.75)';btn.style.borderColor='rgba(255,255,255,.3)';}
   setSyncStatus('saving');
   clearTimeout(_syncTimer);
-  _syncTimer=setTimeout(()=>{_syncTimer=null;cloudSave(d);},800);
+  _syncTimer=setTimeout(()=>{_syncTimer=null;cloudSave(d);},150);
 }
+window.addEventListener('beforeunload',function(e){
+  if(_syncTimer!==null){clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());}
+});
 function undoLast(){
   if(!_undoStack.length)return;
   localStorage.setItem(PLAN_KEY,_undoStack.pop());
