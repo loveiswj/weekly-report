@@ -713,8 +713,8 @@ function saveData(d){
   const btn=document.getElementById('undoBtn');
   if(btn){btn.disabled=false;btn.style.color='rgba(255,255,255,.75)';btn.style.borderColor='rgba(255,255,255,.3)';}
   setSyncStatus('saving');
-  clearTimeout(_syncTimer);
-  _syncTimer=setTimeout(()=>{_syncTimer=null;cloudSave(d);},150);
+  clearTimeout(_syncTimer);_syncTimer=null;
+  cloudSave(d);
 }
 window.addEventListener('beforeunload',function(e){
   if(_syncTimer!==null){clearTimeout(_syncTimer);_syncTimer=null;cloudSave(loadData());}
